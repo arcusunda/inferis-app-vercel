@@ -69,7 +69,9 @@ export default function Home() {
           </li>
         ) : (
           <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400">
+            <span className="text-gray-500 cursor-not-allowed">
               Your Muertos
+             </span>
           </li>
         )}
         <li>
@@ -81,7 +83,6 @@ export default function Home() {
   
   return (
     <main className="flex min-h-screen flex-col items-left justify-between p-6">
-      {renderNavigation()}
       {!isConnected ? (
         <div className="flex flex-col items-center">
           {renderWelcomeContent()}
