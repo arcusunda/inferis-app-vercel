@@ -8,7 +8,7 @@ import { Character } from '../../../types';
 import '@/app/globals.css';
 import { useWeb3Modal } from "@web3modal/wagmi/react"
 import { useAccount } from "wagmi"
-import { Talent, NFT } from '../../../types';
+import { StoryElement, NFT } from '../../../types';
 import {
   RegExpMatcher,
   TextCensor,
@@ -35,7 +35,7 @@ const fetchNFTDetails = async (tokenId: string): Promise<NFT | null> => {
   }
 };
 
-const fetchTalents = async (tokenId: string): Promise<Talent[]> => {
+const fetchTalents = async (tokenId: string): Promise<StoryElement[]> => {
   try {
     const response = await fetch(`/api/talents/${tokenId}`);
     if (response.ok) {
@@ -75,7 +75,7 @@ const NFTDetails = ({ params }: DetailPageProps) => {
   const { tokenId } = params;
   const [nft, setNft] = useState<NFT | null>(null);
   const [nfts, setNfts] = useState([]);
-  const [talents, setTalents] = useState<Talent[]>([]);
+  const [talents, setTalents] = useState<StoryElement[]>([]);
   const [likes, setLikes] = useState<{ [key: string]: number }>({});
   const [comments, setComments] = useState<{ [key: string]: string }>({});
   const [voteStatus, setVoteStatus] = useState<{ [key: string]: boolean }>({});
@@ -491,7 +491,7 @@ const NFTDetails = ({ params }: DetailPageProps) => {
                   <input
                     type="text"
                     id="givenName"
-                    className="bg-gray-700 text-white rounded px-2 py-1 w-32 text-xs"
+                    className="input-text"
                     value={givenName}
                     onChange={(e) => handleGivenName(e.target.value)}
                   />

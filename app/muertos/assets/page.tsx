@@ -5,13 +5,16 @@ import '@/app/globals.css';
 import { useEffect, useState } from 'react';
 import { useWeb3Modal } from "@web3modal/wagmi/react"
 import { useAccount } from "wagmi"
+import ClipLoader from "react-spinners/ClipLoader";
 
 const HomePage = () => {
   const { open } = useWeb3Modal()
   const { address } = useAccount()
   const [nfts, setNfts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     fetchNFTs(address as string);
     const savedNfts = localStorage.getItem('nfts');
 
@@ -19,6 +22,7 @@ const HomePage = () => {
       setNfts(JSON.parse(savedNfts));
       localStorage.setItem('nfts', JSON.stringify(nfts));
     }
+    setLoading(false);
   }, []);
 
   const fetchNFTs = async (address: string) => {
@@ -58,6 +62,22 @@ const HomePage = () => {
     </ul>
   </nav>
   );
+
+  if (loading) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-gray-900 text-white">
+        <ClipLoader color="#ffffff" loading={loading} size={50} />
+        <p className="mt-4">Loading your muertos...</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+          {[1, 2, 3].map((_, index) => (
+            <div key={index} className="border rounded p-6 bg-gray-800 animate-pulse">
+              <div className="h-3 bg-gray-700 mb-2 rounded"></div>
+            </div>
+          ))}
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex flex-col min-h-screen p-6">

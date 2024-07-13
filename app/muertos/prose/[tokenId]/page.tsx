@@ -307,7 +307,7 @@ const ProseDetails = ({ params }: ProseDetailsPageProps) => {
   const handleSaveStoryIdea = async () => {
     const storyIdea = {
       text: aiText,
-      tokenId: tokenId as string,
+      tokenId: tokenId,
       image: nft?.image,
       state: 'Draft',
     };

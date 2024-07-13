@@ -44,46 +44,21 @@ body {
 }
 
 .input-text {
-  color: black;
+  @apply bg-gray-700 text-white rounded px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none;
 }
 
 .dark-gray-input {
-  background-color: #333;
-  color: #fff;
-  padding: 0.5rem;
-  border-radius: 0.25rem;
-  border: 1px solid #ccc;
-  width: 100%;
+  @apply bg-gray-700 text-white p-2 rounded border border-gray-500 w-full focus:ring-2 focus:ring-blue-500 focus:outline-none;
 }
 
 .select-dropdown {
-  background-color: white;
-  color: black;
-  border: 1px solid #ccc;
-  padding: 8px;
-  border-radius: 4px;
-  width: 100%;
-  box-sizing: border-box;
-  font-size: 16px;
+  @apply bg-gray-700 text-white border border-gray-500 p-2 rounded w-full focus:ring-2 focus:ring-blue-500 focus:outline-none;
 }
 
 .select-dropdown option {
-  background-color: white;
-  color: black;
-}
-
-.select-dropdown {
-  background-color: #2d3748; /* bg-gray-700 */
-  color: #ffffff; /* text-white */
-}
-
-.select-dropdown:focus {
-  background-color: #4a5568; /* bg-gray-600 */
-  color: #ffffff; /* text-white */
+  @apply bg-gray-700 text-white;
 }
 
 .disabled {
-  pointer-events: none;
-  background-color: grey;
-  cursor: not-allowed;
+  @apply pointer-events-none bg-gray-500 cursor-not-allowed;
 }

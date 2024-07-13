@@ -1,22 +1,19 @@
-'use client'
+'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
 import { BaseNFTMetadata } from '../../../../utils/utils';
-import { StoryElement } from '../../../types';
-import { Character } from '../../../types';
+import { StoryElement, Character, Talent, NFT } from '../../../types';
 import '@/app/globals.css';
-import { useWeb3Modal } from "@web3modal/wagmi/react"
-import { useAccount } from "wagmi"
-import { Talent, NFT } from '../../../types';
+import { useWeb3Modal } from '@web3modal/wagmi/react';
+import { useAccount } from 'wagmi';
 import {
   RegExpMatcher,
   TextCensor,
   englishDataset,
   englishRecommendedTransformers,
 } from 'obscenity';
-import { text } from 'stream/consumers';
 
 const fetchNFTDetails = async (tokenId: string): Promise<NFT | null> => {
   try {
@@ -62,7 +59,7 @@ const fetchStoryElements = async (attributes: { trait_type: string; value: strin
 const fetchRootStoryElements = async (): Promise<StoryElement[]> => {
   try {
     const response = await fetch('/api/storyelements?isRoot=true');
-    
+
     if (response.ok) {
       const data = await response.json();
       console.info('Fetched story elements:', data);
@@ -125,6 +122,8 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
   const [voteStatus, setVoteStatus] = useState<{ [key: string]: boolean }>({});
   const [checkedElements, setCheckedElements] = useState<{ [key: number]: boolean }>({});
   const [isOwner, setIsOwner] = useState(false);
+  const [isStoryIdeaLoaded, setIsStoryIdeaLoaded] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const { address } = useAccount();
   const baseStat = 10;
   const [givenName, setGivenName] = useState('');
@@ -157,7 +156,7 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
         if (data.nfts) {
           setNfts(data.nfts);
           const nfts: NFT[] = data.nfts;
-          const nftFound = nfts.find(nft => nft.tokenId === tokenId);
+          const nftFound = nfts.find((nft) => nft.tokenId === tokenId);
           if (!nftFound) {
             setNft(null);
             setIsOwner(false);
@@ -166,7 +165,7 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
           setNft(nftFound);
           setIsOwner(true);
         }
-          return data.nfts;
+        return data.nfts;
       } else {
         setIsOwner(false);
         console.error('Error:', data.error);
@@ -179,7 +178,6 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
   };
 
   useEffect(() => {
-
     if (tokenId) {
       fetchNFTs(address as string);
 
@@ -198,15 +196,18 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
           const combinedStoryElementsData = Array.from(elementMap.values());
           setStoryElements(combinedStoryElementsData);
 
-          const initialCheckedElements: { [key: number]: boolean } = combinedStoryElementsData.reduce((acc, element) => {
-            if (element.isRoot) {
-              acc[element.id] = true;
-            }
-            return acc;
-          }, {} as { [key: number]: boolean });
+          const initialCheckedElements: { [key: number]: boolean } = combinedStoryElementsData.reduce(
+            (acc, element) => {
+              if (element.isRoot) {
+                acc[element.id] = true;
+              }
+              return acc;
+            },
+            {} as { [key: number]: boolean }
+          );
 
           setCheckedElements(initialCheckedElements);
-              
+
           const voteStatusData = await Promise.all(
             storyElementsData.map(async (element) => {
               const voteCount = await checkVote(element.name);
@@ -221,13 +222,13 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
               return { [element.name]: likes };
             })
           );
-  
+
           setLikes(Object.assign({}, ...likesData));
 
           const talentsData = await fetchTalents(tokenId as string);
           setTalents(talentsData);
 
-          console.info(`tokenId: ${tokenId}`)
+          console.info(`tokenId: ${tokenId}`);
           const characterData = await fetchCharacterByTokenId(tokenId);
           if (characterData) {
             const talentsMap: { [key: string]: Set<number> } = {
@@ -237,21 +238,24 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
               expressionTalents: new Set(),
             };
 
-            characterData.attributes.forEach(attr => {
-              if (attr.trait_type === "Talents") {
-                attr.value.toString().split(', ').forEach(talentId => {
-                  const talent = talentsData.find(a => a.id === parseInt(talentId, 10));
-                  if (talent) {
-                    const categoryKey = talent.categoryType.toLowerCase() + 'Talents';
-                    if (!talentsMap[categoryKey]) {
-                      talentsMap[categoryKey] = new Set();
+            characterData.attributes.forEach((attr) => {
+              if (attr.trait_type === 'Talents') {
+                attr.value
+                  .toString()
+                  .split(', ')
+                  .forEach((talentId) => {
+                    const talent = talentsData.find((a) => a.id === parseInt(talentId, 10));
+                    if (talent) {
+                      const categoryKey = talent.categoryType.toLowerCase() + 'Talents';
+                      if (!talentsMap[categoryKey]) {
+                        talentsMap[categoryKey] = new Set();
+                      }
+                      talentsMap[categoryKey].add(talent.id);
                     }
-                    talentsMap[categoryKey].add(talent.id);
-                  }
-                });
+                  });
               }
             });
-            
+
             setSelectedTalents(talentsMap);
             setIsCharacterSaved(true);
           }
@@ -266,6 +270,18 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
               setGivenName(`${result.givenName}`);
             }
           }
+
+          // Check if a StoryIdea exists
+          const storyIdeaResponse = await fetch(`/api/storyideas/${tokenId}`);
+          if (storyIdeaResponse.ok) {
+            const storyIdeaResult = await storyIdeaResponse.json();
+            if (storyIdeaResult) {
+              console.info('Story Idea:', storyIdeaResult);
+              setAiText(`${storyIdeaResult.text}`);
+              setIsStoryIdeaLoaded(true);
+              setIsAiPromptCompleted(true);
+            }
+          }
         }
       };
       fetchData();
@@ -275,8 +291,8 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
   const handlePromptClick = async () => {
     setIsLoading(true);
     setIsAiPromptCompleted(false);
-    const selectedElements = storyElements.filter(el => checkedElements[el.id]);
-    const elementIds = selectedElements.map(el => el.id).join(',');
+    const selectedElements = storyElements.filter((el) => checkedElements[el.id]);
+    const elementIds = selectedElements.map((el) => el.id).join(',');
     const maskAttribute = nft?.attributes.find((attr) => attr.trait_type === 'Mask');
     const surname = maskAttribute ? maskAttribute.value : 'Unknown';
 
@@ -316,24 +332,24 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
       },
       body: JSON.stringify({ storyElementName: elementName }),
     });
-  
+
     const data = await response.json();
     return data.likes;
   };
-  
+
   const checkVote = async (elementName: string) => {
     const voterAddress = address;
 
     const response = await fetch('/api/storyelements/vote/check-vote', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          voterAddress,
-          tokenId,
-          storyElementName: elementName,
-        })
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        voterAddress,
+        tokenId,
+        storyElementName: elementName,
+      }),
     });
 
     const data = await response.json();
@@ -382,28 +398,28 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
       console.error('NFT is null');
       return;
     }
-  
+
     const character = {
       id: 1,
       name: nft.name,
-      description: "A character sheet for this Muerto.",
+      description: 'A character sheet for this Muerto.',
       image: nft.image,
       wallet: address,
       tokenId: nft.tokenId,
       givenName: givenName,
       attributes: [
         {
-          trait_type: "Talents",
+          trait_type: 'Talents',
           value: Array.from(selectedTalents.maskTalents)
             .concat(Array.from(selectedTalents.bodyTalents))
             .concat(Array.from(selectedTalents.headwearTalents))
             .concat(Array.from(selectedTalents.expressionTalents))
-            .map(talentId => talents.find(talent => talent.id === talentId)?.id)
-            .join(', ')
-        }
-      ]
+            .map((talentId) => talents.find((talent) => talent.id === talentId)?.id)
+            .join(', '),
+        },
+      ],
     };
-  
+
     const response = await fetch(`/api/characters`, {
       method: 'POST',
       headers: {
@@ -411,7 +427,7 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
       },
       body: JSON.stringify(character),
     });
-  
+
     if (response.ok) {
       const data = await response.json();
       setIsCharacterSaved(true);
@@ -422,7 +438,7 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
       console.error('Failed to save character');
     }
   };
-    
+
   const handleCheckboxChange = (elementId: number) => {
     setCheckedElements((prevChecked) => ({
       ...prevChecked,
@@ -449,6 +465,8 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
 
     if (response.ok) {
       const data = await response.json();
+      setIsStoryIdeaLoaded(true);
+      setIsEditing(false);
     } else {
       console.error('Failed to save story idea');
     }
@@ -469,15 +487,15 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
         return '';
     }
   };
-    
+
   const handleTalentSelect = (categoryType: string, talentId: number) => {
     const traitType = categoryToTalentType(categoryType);
     if (!traitType) return;
-  
+
     setSelectedTalents((prevSelected) => {
       const newSelected = { ...prevSelected };
       const updatedSet = new Set(newSelected[traitType]);
-  
+
       if (updatedSet.has(talentId)) {
         updatedSet.delete(talentId);
       } else {
@@ -485,7 +503,7 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
           updatedSet.add(talentId);
         }
       }
-  
+
       newSelected[traitType] = updatedSet;
       return newSelected;
     });
@@ -495,7 +513,7 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
     const matches = matcher.getAllMatches(theAiText);
     const censoredAiText = censor.applyTo(theAiText, matches);
     setAiText(censoredAiText);
-  }
+  };
 
   const handleGivenName = (givenName: string) => {
     const matches = matcher.getAllMatches(givenName);
@@ -503,7 +521,7 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
     setGivenName(censoredComment);
     setSavedCharacterName(null);
     setNameCheckResult(null);
-  }
+  };
 
   const handleCheckName = async () => {
     if (!givenName.trim()) {
@@ -511,7 +529,7 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
       return;
     }
 
-    if(!nft) {
+    if (!nft) {
       return;
     }
 
@@ -546,7 +564,7 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
   const capitalizeFirstLetter = (string: string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
   };
-  
+
   const renderNavigation = () => (
     <nav className="bg-gray-800 p-4">
       <ul className="flex justify-center items-center space-x-4">
@@ -570,7 +588,7 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
   return (
     <main className="flex flex-col min-h-screen p-6">
       {renderNavigation()}
-      
+
       {!address ? (
         <div className="flex justify-center items-center h-full">
           <p className="text-xl text-gray-500">Please connect your wallet</p>
@@ -586,140 +604,159 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
         </div>
       ) : (
         <div className="flex flex-col justify-center items-center h-full">
-          <h2 className="text-lg font-bold mb-2">
-            {savedCharacterName ? savedCharacterName : nft.name}
-          </h2>
+          <h2 className="text-lg font-bold mb-2">{savedCharacterName ? savedCharacterName : nft.name}</h2>
           <div className="flex flex-col lg:flex-row items-center lg:items-start lg:space-x-6 w-full">
-          <img
+            <img
               src={nft.image.replace('ipfs://', 'https://ipfs.io/ipfs/')}
               alt={`Token ID: ${tokenId}`}
               className="w-full lg:w-1/3 h-auto rounded-lg mb-4 lg:mb-0 p-4"
               style={{ borderRadius: '0.75rem' }}
             />
             <div className="text-sm text-gray-400 w-full lg:w-1/2">
-              <p className="mb-2"><strong>Token ID:</strong> {tokenId}</p>
+              <p className="mb-2">
+                <strong>Token ID:</strong> {tokenId}
+              </p>
               {nft.attributes.map((attr, index) => (
-                <p key={index} className="mb-1"><strong>{attr.trait_type}:</strong> {attr.value}</p>
+                <p key={index} className="mb-1">
+                  <strong>{attr.trait_type}:</strong> {attr.value}
+                </p>
               ))}
             </div>
-          </div>  
+          </div>
           <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-500">
-                    <thead>
-                      <tr>
-                        <th className="border border-gray-500 px-2 py-1">Talent Name</th>
-                        <th className="border border-gray-500 px-2 py-1">Category</th>
-                        <th className="border border-gray-500 px-2 py-1">Source</th>
+            <table className="w-full border-collapse border border-gray-500">
+              <thead>
+                <tr>
+                  <th className="border border-gray-500 px-2 py-1">Talent Name</th>
+                  <th className="border border-gray-500 px-2 py-1">Category</th>
+                  <th className="border border-gray-500 px-2 py-1">Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                {talents
+                  .filter((talent) => selectedTalents[categoryToTalentType(talent.categoryType)]?.has(talent.id))
+                  .map((talent) => {
+                    const traitTypeKey = categoryToTalentType(talent.categoryType);
+                    return (
+                      <tr key={talent._id} className="border border-gray-500">
+                        <td className="border border-gray-500 px-2 py-1" title={talent.description}>
+                          <strong>{talent.name}</strong>
+                        </td>
+                        <td className="border border-gray-500 px-2 py-1">{talent.categoryName}</td>
+                        <td className="border border-gray-500 px-2 py-1">
+                          {capitalizeFirstLetter(talent.categoryType)}
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {talents
-                        .filter((talent) => selectedTalents[categoryToTalentType(talent.categoryType)]?.has(talent.id))
-                        .map((talent) => {
-                          const traitTypeKey = categoryToTalentType(talent.categoryType);
-                          return (
-                            <tr key={talent._id} className="border border-gray-500">
-                              <td className="border border-gray-500 px-2 py-1" title={talent.description}>
-                                <strong>{talent.name}</strong>
-                              </td>
-                              <td className="border border-gray-500 px-2 py-1">{talent.categoryName}</td>
-                              <td className="border border-gray-500 px-2 py-1">{capitalizeFirstLetter(talent.categoryType)}</td>
-                            </tr>
-                          );
-                        })}
-                    </tbody>
-                  </table>
-                </div>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </div>
           <div className="mt-8 w-full">
             <h2 className="text-2xl font-bold mb-4 text-center">Story Elements</h2>
             <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-gray-400">
+              <table className="w-full text-left text-sm text-gray-400">
                 <thead>
-                <tr>
+                  <tr>
                     <th className="px-4 py-2">Include in Prompt</th>
                     <th className="px-4 py-2">Story Element</th>
                     <th className="px-4 py-2">Like</th>
                     <th className="px-4 py-2">Likes</th>
                     <th className="px-4 py-2">Comment</th>
-                </tr>
+                  </tr>
                 </thead>
                 <tbody>
-                {storyElements.map((element, index) => (
+                  {storyElements.map((element, index) => (
                     <tr key={index}>
-                    <td className="px-4 py-2">
+                      <td className="px-4 py-2">
                         <div className="flex justify-center">
-                        <input
+                          <input
                             type="checkbox"
                             checked={element.isRoot || !!checkedElements[element.id]}
                             onChange={() => handleCheckboxChange(element.id)}
                             disabled={element.isRoot}
-                        />
+                          />
                         </div>
-                    </td>
-                    <td className="px-4 py-2">
+                      </td>
+                      <td className="px-4 py-2">
                         <Link href={`/muertos/storyelements/${element.name}`} className="text-blue-500 hover:underline">
-                        {element.name}
+                          {element.name}
                         </Link>
-                    </td>
-                    <td className="px-4 py-2">
+                      </td>
+                      <td className="px-4 py-2">
                         <button
-                        onClick={() => handleLikeClick(element.name)}
-                        className={`px-2 py-1 rounded ${voteStatus[element.name] ? 'bg-gray-500 text-gray-300 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-700'}`}
-                        disabled={voteStatus[element.name]}
+                          onClick={() => handleLikeClick(element.name)}
+                          className={`px-2 py-1 rounded ${
+                            voteStatus[element.name]
+                              ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                              : 'bg-blue-500 text-white hover:bg-blue-700'
+                          }`}
+                          disabled={voteStatus[element.name]}
                         >
-                        Like
+                          Like
                         </button>
-                    </td>
-                    <td className="px-4 py-2">{likes[element.name] || 0}</td>
-                    <td className="px-4 py-2">
+                      </td>
+                      <td className="px-4 py-2">{likes[element.name] || 0}</td>
+                      <td className="px-4 py-2">
                         <input
-                        type="text"
-                        placeholder="Comment"
-                        value={comments[element.name] || ''}
-                        onChange={(e) => handleCommentChange(element.name, e.target.value)}
-                        className="w-full p-1 bg-gray-700 text-white rounded"
-                        disabled={voteStatus[element.name]}
+                          type="text"
+                          placeholder="Comment"
+                          value={comments[element.name] || ''}
+                          onChange={(e) => handleCommentChange(element.name, e.target.value)}
+                          className={`w-full p-2 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+                            voteStatus[element.name] ? 'disabled' : ''
+                          }`}
+                          disabled={voteStatus[element.name]}
                         />
-                    </td>
+                      </td>
                     </tr>
-                ))}
+                  ))}
                 </tbody>
-            </table>
-        </div>
-  
+              </table>
+            </div>
+
             <div className="flex justify-center mt-4">
               <button
                 onClick={handlePromptClick}
                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
                 disabled={isLoading}
               >
-                {isLoading ? 'Please wait...' : 'Prompt Inferis World Scholar'}
+                {isLoading ? 'Please wait...' : 'Create (Overwrite) Story Idea'}
               </button>
             </div>
-  
+
             <div className="mt-6 w-full flex justify-center">
-              <textarea
-                className="w-full lg:w-1/2 h-32 p-2 bg-gray-700 text-white border rounded"
-                value={aiText}
-                onChange={(e) => handleAiText(e.target.value)}
-              />
+              {isStoryIdeaLoaded && !isEditing ? (
+                <div className="w-full lg:w-1/2 p-2 bg-gray-700 text-white rounded border border-gray-500 text-lg">
+                  {aiText}
+                </div>
+              ) : (
+                <textarea
+                  className="w-full lg:w-1/2 h-32 p-2 bg-gray-700 text-white border border-gray-500 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  value={aiText}
+                  onChange={(e) => handleAiText(e.target.value)}
+                />
+              )}
             </div>
-  
+
             {isAiPromptCompleted && (
-              <div className="flex justify-center mt-4">
+              <div className="flex justify-center mt-4 mb-4">
                 <button
-                  onClick={handleSaveStoryIdea}
-                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
+                  onClick={isStoryIdeaLoaded && !isEditing ? () => setIsEditing(true) : handleSaveStoryIdea}
+                  className={`px-4 py-2 ${
+                    isEditing ? 'bg-green-500' : 'bg-blue-500'
+                  } text-white rounded hover:bg-green-700`}
                   disabled={isSaving}
                 >
-                  {isSaving ? 'Please wait...' : 'Save Story Idea'}
+                  {isSaving ? 'Please wait...' : isEditing ? 'Save Story Idea' : 'Edit'}
                 </button>
               </div>
             )}
           </div>
         </div>
       )}
-    </main>
+      {renderNavigation()}
+      </main>
   );
 };
 

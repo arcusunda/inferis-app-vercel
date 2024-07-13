@@ -122,7 +122,7 @@ export type Quest = {
 };
 
 export type StoryIdea = {
-  tokenId: string;
+  tokenId: number;
   text: string;
   image: string;
   state: 'Draft';

@@ -7,6 +7,7 @@ import { useAccount } from "wagmi";
 import { NFTBaseContractAddress, NFTStakingContractAddress } from '../../../utils/utils';
 import axios from 'axios';
 import '@/app/globals.css';
+import ClipLoader from "react-spinners/ClipLoader";
 import {
 	RegExpMatcher,
 	TextCensor,
@@ -22,6 +23,7 @@ const StoryIdeasList = () => {
   const [noVotes, setNoVotes] = useState<{ [key: string]: number }>({});
   const [voteStatus, setVoteStatus] = useState<{ [key: string]: boolean }>({});
   const [isHolder, setIsHolder] = useState(false);
+  const [loading, setLoading] = useState(true);
   const censor = new TextCensor();
   const matcher = new RegExpMatcher({
     ...englishDataset.build(),
@@ -63,9 +65,11 @@ const StoryIdeasList = () => {
   useEffect(() => {
 
     const fetchData = async () => {
+      setLoading(true);
       const response = await fetch(`/api/storyideas/`);
       const data = await response.json();
       setStoryIdeas(data);
+      setLoading(false);
     };
 
     fetchData();
@@ -105,7 +109,7 @@ const StoryIdeasList = () => {
     updateVoteStatusAndLikes();
   }, [storyIdeas]);
 
-  const fetchVoteStatus = async (tokenId: string) => {
+  const fetchVoteStatus = async (tokenId: number) => {
     const response = await fetch(`/api/storyideas/vote/check-vote`, {
       method: 'POST',
       headers: {
@@ -125,7 +129,7 @@ const StoryIdeasList = () => {
     return ipfsUrl;
   }
 
-  const handleVoteClick = async (tokenId: string, vote: string) => {
+  const handleVoteClick = async (tokenId: number, vote: string) => {
     const voterAddress = address;
       const comment = comments[tokenId] || '';
       const matches = matcher.getAllMatches(comment);
@@ -158,7 +162,7 @@ const StoryIdeasList = () => {
     }
   };
 
-  const handleCommentChange = (tokenId: string, value: string) => {
+  const handleCommentChange = (tokenId: number, value: string) => {
     setComments((prevComments) => ({
       ...prevComments,
       [tokenId]: value,
@@ -185,10 +189,26 @@ const StoryIdeasList = () => {
     </nav>
   );
 
+  if (loading) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-gray-900 text-white">
+        <ClipLoader color="#ffffff" loading={loading} size={50} />
+        <p className="mt-4">Loading all story ideas...</p>
+        <div className="grid grid-cols-3 md:grid-cols-2 lg:grid-cols-1 gap-4 mt-4">
+          {[1, 2, 3].map((_, index) => (
+            <div key={index} className="border rounded p-6 bg-gray-800 animate-pulse">
+              <div className="h-3 bg-gray-700 mb-2 rounded"></div>
+            </div>
+          ))}
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-6">
-      {renderNavigation()}
-      <h1>Story Ideas</h1>
+    {renderNavigation()}
+    <h1>Story Ideas</h1>
       <div className="w-full">
         {storyIdeas.map((storyIdea) => (
           <div key={storyIdea.tokenId} className="border rounded p-4 mb-6">
@@ -252,7 +272,7 @@ const StoryIdeasList = () => {
                             placeholder="Comment"
                             value={comments[storyIdea.tokenId] || ''}
                             onChange={(e) => handleCommentChange(storyIdea.tokenId, e.target.value)}
-                            className="w-full p-1 bg-gray-700 text-white rounded text-center"
+                            className={`w-full p-2 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500 focus:outline-none ${voteStatus[storyIdea.tokenId] ? 'disabled' : ''}`}
                             disabled={voteStatus[storyIdea.tokenId]}
                           />
                         </td>
@@ -276,6 +296,7 @@ const StoryIdeasList = () => {
           </div>
         ))}
       </div>
+      {renderNavigation()}
     </main>
   );
   
