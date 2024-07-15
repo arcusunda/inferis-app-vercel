@@ -247,9 +247,9 @@ const StoryIdeasList = () => {
                               className={`px-2 py-1 rounded ${
                                 voteStatus[storyIdea.tokenId]
                                   ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
-                                  : 'bg-blue-500 text-white hover:bg-blue-700'
+                                  : 'bg-blue-500 text-white disabled:opacity-50 disabled:cursor-not-allowed'
                               }`}
-                              disabled={voteStatus[storyIdea.tokenId]}
+                              disabled={true}
                             >
                               Yes
                             </button>
@@ -258,9 +258,9 @@ const StoryIdeasList = () => {
                               className={`px-2 py-1 rounded ${
                                 voteStatus[storyIdea.tokenId]
                                   ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
-                                  : 'bg-red-500 text-white hover:bg-red-700'
+                                  : 'bg-red-500 text-white disabled:opacity-50 disabled:cursor-not-allowed'
                               }`}
-                              disabled={voteStatus[storyIdea.tokenId]}
+                              disabled={true}
                             >
                               No
                             </button>

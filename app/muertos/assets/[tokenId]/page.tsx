@@ -496,11 +496,12 @@ const NFTDetails = ({ params }: DetailPageProps) => {
                     onChange={(e) => handleGivenName(e.target.value)}
                   />
                   <button
-                    className="ml-2 px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-700 text-xs"
+                    className="ml-2 px-2 py-1 bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed text-xs"
                     onClick={isNameChecked ? handleSaveCharacter : handleCheckName}
+                    disabled={true}
                   >
                     {isNameChecked ? 'Save' : 'Check'}
-                  </button>
+                    </button>
                 </div>
                 {nameCheckResult && (
                   <p className="mt-2 text-xs text-white-500">{nameCheckResult}</p>
@@ -511,8 +512,9 @@ const NFTDetails = ({ params }: DetailPageProps) => {
                 {isCharacterSaved ? (
               <Link href={`/muertos/storyideas/${nft.tokenId}`} key={nft.tokenId} className="border border-gray-300 rounded-lg p-4 max-w-xs text-center">
                 <button
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-                >
+                  className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={true}
+                  >
                   Create Story Idea
                 </button>
               </Link>
@@ -520,8 +522,9 @@ const NFTDetails = ({ params }: DetailPageProps) => {
                 ) : (
                   <button
                     onClick={handleSaveCharacter}
-                    className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
-                  >
+                    className="px-4 py-2 bg-green-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={true}
+                    >
                     Save Character
                   </button>
                 )}
