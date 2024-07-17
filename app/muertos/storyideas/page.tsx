@@ -207,7 +207,6 @@ const StoryIdeasList = () => {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-6">
-    {renderNavigation()}
     <h1>Story Ideas</h1>
       <div className="w-full">
         {storyIdeas.map((storyIdea) => (
@@ -296,7 +295,6 @@ const StoryIdeasList = () => {
           </div>
         ))}
       </div>
-      {renderNavigation()}
     </main>
   );
   
