@@ -250,13 +250,13 @@ export default function Home() {
   const renderWelcomeContent = () => (
     <div className="text-center">
       {renderBanner()}
-      <h2 className="text-3xl font-bold mt-4">Welcome to Story Element</h2>
-      <p className="mt-4 p-4 bg-gray-800 rounded text-center text-lg leading-7">
-      Story Element is a world building collaboration app that uses AI to assist creators in collaboratively forming a narrative universe.
+      <h2 className="text-xl sm:text-3xl font-bold mt-2 sm:mt-4">Welcome to Story Element</h2>
+      <p className="mt-2 sm:mt-4 p-2 sm:p-4 bg-gray-200 dark:bg-gray-800 rounded text-center text-sm sm:text-lg leading-5 sm:leading-7">
+        Story Element is a world building collaboration app that uses AI to assist creators in collaboratively forming a narrative universe.
       </p>
     </div>
   );
-
+  
   const renderNavigation = () => (
     <nav className="bg-gray-800 p-4">
     <ul className="flex justify-center items-center space-x-4">
