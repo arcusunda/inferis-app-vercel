@@ -29,30 +29,23 @@ export default function Home() {
       />
       <h2 className="text-xl font-bold mt-8">Holders of Los Muertos World</h2>
       <p className="mt-4 p-4 bg-gray-800 rounded text-center text-lg leading-7">
-      (Coming soon)
+        (Coming soon)
       </p>
-      <p className="mt-4 p-4 bg-gray-800 rounded text-center text-lg leading-7">
-      You are invited to step into a world where mystery and magic intertwine. The Inferis universe awaits your exploration, a realm shaped by the unique traits of Los Muertos World. As a holder of a muerto, you contribute to an evolving narrative that blends the macabre charm of Los Muertos World with the enigmatic depths of Inferis.
+      <p className="mt-4 p-4 bg-gray-800 rounded text-left text-lg leading-7">
+        Holders of Los Muertos World, your muerto may be a key to unlocking a collaborative storytelling adventure in the world of <em>Tali and the 10,000 Muertos</em>, an upcoming paranormal mystery series with elements of urban fantasy and magical realism, following a young protagonist as she navigates between the mortal world and a twilight realm, uncovering supernatural secrets while grappling with her own identity and family history. Your muerto could play a crucial role in Talisa's quest to unravel the mystery of Inferis and the forces keeping souls bound there. By selecting story elements associated with your muerto's attributes, you'll guide AI in generating a story idea that fits seamlessly into Talisa's story. Your creation could become the foundation for an episode where Talisa encounters your muerto and journeys with them to the twilight realm of Inferis, working to understand the reasons for their ensnarement and the connection to her own family mystery. Each story idea contributes to the rich tapestry of our shared universe, blending elements of cultural exploration, supernatural mystery, and personal discovery. A story idea potentially becomes a full episode, each one enriching our collective lore and may influence the unfolding narrative of Talisa's quest.
       </p>
-      <h2 className="text-xl font-bold mt-4">Welcome to the World of {WorldName}</h2>
-      <p className="mt-4 p-4 bg-gray-800 rounded text-center text-lg leading-7">
-      Inferis is a place of endless possibilities and hidden secrets. It is a realm where the boundaries of reality are fluid, and every corner holds a story waiting to be told. Ancient forests whisper forgotten secrets, deserts shimmer with illusions, and cities pulse with the life of countless tales. This is a world where creativity is the most potent force. Inferis is not just a place; it is a living, breathing entity, shaped by those who dare to dream and explore. Each region within Inferis is unique, filled with challenges and wonders that reflect the diversity of its inhabitants.
+      <p className="mt-4 p-4 bg-gray-800 rounded text-left text-lg leading-7">
+        Talisa Esperanza has the unique gift or burden if you will, of seeing muertos outside the yearly Day of the Dead celebration. Particularly, those souls trapped in Inferis, a twilight realm caught between the world of the living and Los Muertos World. Since her 13th birthday, these souls have manifested to her as tangible beings dominated by their vibrant, multi-colored candy skull masks. Their bodies appear almost real, displaying the manner of their death, while some are adorned with flitting fairies or pulsating halos that sing like glass harps. These striking, eerily present beings haunt Talisa's daily life, isolating her from peers and precluding a normal life. Despite the weight of her gift and the frustration of not fully understanding it, Talisa is driven by a deeper fear - the absence of her deceased parents during the Day of the Dead and an almost unconscious desire to uncover why, dreading they might be trapped in Inferis rather than Los Muertos World. She hopes to guide the muertos back to Los Muertos World, all while uncovering the truth about her own heritage and a larger spiritual conflict that seems to be keeping these souls bound to Inferis. Through this journey, Talisa aims to bridge the gap between worlds, fostering understanding across cultures and realms of existence.
       </p>
-      <p className="mt-4 p-4 bg-gray-800 rounded text-center text-lg leading-7">
-      During the annual Day of the Dead festivities, an unexpected phenomenon occurs. A shimmering portal, pulsing with unknown energies, appears beside the traditional marigold bridge that connects the muertos to their living relatives. Drawn by curiosity and a desire for adventure, one muerto spies the subtle portal and ventures through this mysterious gateway to discover Inferis. In the coming days, more portals appear and other muertos pass through.
+      <p className="mt-4 p-4 bg-gray-800 rounded text-left text-lg leading-7">
+        Once your story idea is generated, you may vote for others. The most captivating tales become part of the story's lore, celebrated as key episodes in an epic saga.
       </p>
-      <p className="mt-4 p-4 bg-gray-800 rounded text-center text-lg leading-7">
-      Every Muerto holder has the opportunity to be part of the story. By selecting key Story Elements, you will prompt AI to generate a unique story idea that fits within the Inferis universe. This collaborative storytelling will not only expand the rich lore of Inferis but also highlight the diverse traits within Los Muertos World. Each story idea will be a piece of a grand mosaic, contributing to the ever-evolving tapestry of Inferis.
-      </p>
-      <p className="mt-4 p-4 bg-gray-800 rounded text-center text-lg leading-7">
-      Once your story idea is generated, you may vote for others. The most captivating tales become part of the Inferis lore, celebrated as key episodes in an epic saga. Your participation will help shape the destiny of Inferis, ensuring that every Muerto's part is unique and unforgettable.
-      </p>
-      <p className="mt-4 p-4 bg-gray-800 rounded text-center text-lg leading-7">
-      Be ready to dive into the mysteries of Inferis. The adventure is about to begin, and your Muerto is the key to unlocking the magic and wonder that lies within. Join us in creating a world where every story matters, and every choice leads to new discoveries.
+      <p className="mt-4 p-4 bg-gray-800 rounded text-left text-lg leading-7">
+        Ready to see how your muerto might fit into this tale of two worlds? Step into Inferis, where every mask holds a story, and every story could be a clue to the greater mystery Talisa seeks to solve. Your muerto's journey - and perhaps the key to unlocking the secrets of Inferis - awaits.
       </p>
     </div>
   );
-
+  
   const renderNavigation = () => (
     <nav className="bg-gray-800 p-4">
       <ul className="flex justify-center items-center space-x-4">
