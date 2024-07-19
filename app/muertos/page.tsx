@@ -76,12 +76,10 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center justify-between p-4 sm:p-6">
       {!isConnected ? (
         <div className="flex flex-col items-center">
-          {renderNavigation()}
           {renderWelcomeContent()}
         </div>
       ) : (
         <div className="flex flex-col items-center">
-          {renderNavigation()}
           <div className="flex flex-col items-center mt-4">
             {renderWelcomeContent()}
           </div>
