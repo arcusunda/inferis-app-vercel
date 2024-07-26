@@ -6,14 +6,30 @@ export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const isRootParam = url.searchParams.get('isRoot');
+    const aspectParam = url.searchParams.get('aspect');
     const isRoot = isRootParam === 'true';
     
     const collection = await getCollection('storyElements');
-    const query = isRoot ? { isRoot: true } : {};
+    
+    let query: any = {};
+    if (isRoot) {
+      query.isRoot = true;
+    }
+
+    if (aspectParam) {
+      query.attributes = {
+        $elemMatch: {
+          trait_type: 'Aspect',
+          value: aspectParam
+        }
+      };
+    }
+    
     const storyElements = await collection.find(query).toArray();
     
     return NextResponse.json(storyElements);
   } catch (error) {
+    console.error('Error fetching story elements:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   } finally {
     closeMongoDB();

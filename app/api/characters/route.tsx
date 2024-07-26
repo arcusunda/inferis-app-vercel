@@ -10,6 +10,8 @@ export async function POST(request: NextRequest) {
 
     const tokenId = parseInt(character.tokenId as unknown as string, 10);
 
+    console.info('Character tokenId:', tokenId);
+
     if (isNaN(tokenId)) {
       return NextResponse.json({ error: 'Invalid tokenId format' }, { status: 400 });
     }

@@ -569,6 +569,7 @@ const StoryElementDetail = ({params}: StoryElementDetailProps) => {
           <h3 className="text-2xl font-semibold mb-2">{storyElement.name}</h3>
           <p className="mb-2">ID: {storyElement.id}</p>
           <p className="mb-4">{storyElement.attributes?.find((attr: { trait_type: string; }) => attr.trait_type === 'Text')?.value || 'No text available'}</p>
+          <p className="mb-4">Aspect: {storyElement.attributes?.find((attr: { trait_type: string; }) => attr.trait_type === 'Aspect')?.value || 'No text available'}</p>
           <p className="mb-4">
             <strong>Parents: </strong>
             {parentLinks && parentLinks.length > 0 ? parentLinks : 'No parents'}

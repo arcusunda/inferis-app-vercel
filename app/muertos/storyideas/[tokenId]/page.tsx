@@ -74,9 +74,9 @@ const fetchRootStoryElements = async (): Promise<StoryElement[]> => {
   }
 };
 
-const fetchTalents = async (tokenId: string): Promise<Talent[]> => {
+const fetchTropes = async (tokenId: string): Promise<StoryElement[]> => {
   try {
-    const response = await fetch(`/api/talents/${tokenId}`);
+    const response = await fetch(`/api/tropes/${tokenId}`);
     if (response.ok) {
       const data = await response.json();
       return Array.isArray(data) ? data : [];
@@ -115,7 +115,7 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
   const [nft, setNft] = useState<NFT | null>(null);
   const [nfts, setNfts] = useState([]);
   const [storyElements, setStoryElements] = useState<StoryElement[]>([]);
-  const [talents, setTalents] = useState<Talent[]>([]);
+  const [tropes, setTropes] = useState<StoryElement[]>([]);
   const [aiText, setAiText] = useState<string>('');
   const [likes, setLikes] = useState<{ [key: string]: number }>({});
   const [comments, setComments] = useState<{ [key: string]: string }>({});
@@ -137,7 +137,7 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
     ...englishRecommendedTransformers,
   });
 
-  const [selectedTalents, setSelectedTalents] = useState<{ [key: string]: Set<number> }>({
+  const [selectedTropes, setSelectedTropes] = useState<{ [key: string]: Set<number> }>({
     maskTalents: new Set(),
     bodyTalents: new Set(),
     headwearTalents: new Set(),
@@ -225,38 +225,40 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
 
           setLikes(Object.assign({}, ...likesData));
 
-          const talentsData = await fetchTalents(tokenId as string);
-          setTalents(talentsData);
+          const tropesData = await fetchTropes(tokenId as string);
+          setTropes(tropesData);
 
           console.info(`tokenId: ${tokenId}`);
           const characterData = await fetchCharacterByTokenId(tokenId);
+
           if (characterData) {
-            const talentsMap: { [key: string]: Set<number> } = {
-              maskTalents: new Set(),
-              bodyTalents: new Set(),
-              headwearTalents: new Set(),
-              expressionTalents: new Set(),
+            const tropeMap: { [key: string]: Set<number> } = {
+              magicItems: new Set(),
+              magicCreatures: new Set(),
+              settings: new Set(),
+              mortalAntagonists: new Set(),
+              crypticClue: new Set()
             };
 
             characterData.attributes.forEach((attr) => {
-              if (attr.trait_type === 'Talents') {
+              if (attr.trait_type === 'StoryElements') {
                 attr.value
                   .toString()
                   .split(', ')
-                  .forEach((talentId) => {
-                    const talent = talentsData.find((a) => a.id === parseInt(talentId, 10));
-                    if (talent) {
-                      const categoryKey = talent.categoryType.toLowerCase() + 'Talents';
-                      if (!talentsMap[categoryKey]) {
-                        talentsMap[categoryKey] = new Set();
+                  .forEach((tropeId) => {
+                    const trope = tropesData.find((a) => a.id === parseInt(tropeId, 10));
+                    if (trope) {
+                      const categoryKey = trope.attributes?.find((attr: { trait_type: string; }) => attr.trait_type === 'Aspect')?.value || 'No text available'.toLowerCase();
+                      if (!tropeMap[categoryKey]) {
+                        tropeMap[categoryKey] = new Set();
                       }
-                      talentsMap[categoryKey].add(talent.id);
+                      tropeMap[categoryKey].add(trope.id);
                     }
                   });
               }
             });
 
-            setSelectedTalents(talentsMap);
+            setSelectedTropes(tropeMap);
             setIsCharacterSaved(true);
           }
           const maskAttribute = nftData.attributes.find((attr) => attr.trait_type === 'Mask');
@@ -291,21 +293,16 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
   const handlePromptClick = async () => {
     setIsLoading(true);
     setIsAiPromptCompleted(false);
-    const selectedElements = storyElements.filter((el) => checkedElements[el.id]);
-    const elementIds = selectedElements.map((el) => el.id).join(',');
-    const maskAttribute = nft?.attributes.find((attr) => attr.trait_type === 'Mask');
-    const surname = maskAttribute ? maskAttribute.value : 'Unknown';
-
-    const characterName = givenName + ' ' + surname;
+    const elementIds = tropes.map((el) => el.id).join(',');
 
     const response = await fetch(`/api/rootprompts/Logline?promptName=Logline`);
 
     const loglineData = await response.json();
 
-    const aiPrompt = 'The character name is: ' + characterName + '. ' + loglineData.promptText;
+    const aiPrompt = loglineData.promptText;
 
     const serializedTalents = Object.fromEntries(
-      Object.entries(selectedTalents).map(([key, value]) => [key, Array.from(value)])
+      Object.entries(selectedTropes).map(([key, value]) => [key, Array.from(value)])
     );
 
     console.info('serializedTalents:', serializedTalents);
@@ -409,12 +406,13 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
       givenName: givenName,
       attributes: [
         {
-          trait_type: 'Talents',
-          value: Array.from(selectedTalents.maskTalents)
-            .concat(Array.from(selectedTalents.bodyTalents))
-            .concat(Array.from(selectedTalents.headwearTalents))
-            .concat(Array.from(selectedTalents.expressionTalents))
-            .map((talentId) => talents.find((talent) => talent.id === talentId)?.id)
+          trait_type: 'StoryElements',
+          value: Array.from(selectedTropes.magicItems)
+            .concat(Array.from(selectedTropes.magicCreatures))
+            .concat(Array.from(selectedTropes.settings))
+            .concat(Array.from(selectedTropes.mortalAntagonists))
+            .concat(Array.from(selectedTropes.crypticClue))
+            .map((tropeId) => tropes.find((trope) => trope.id === tropeId)?.id)
             .join(', '),
         },
       ],
@@ -473,34 +471,36 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
     setIsSaving(false);
   };
 
-  const categoryToTalentType = (categoryType: string): string => {
+  const categoryToTropeType = (categoryType: string): string => {
     switch (categoryType) {
-      case 'mask':
-        return 'maskTalents';
-      case 'body':
-        return 'bodyTalents';
-      case 'headwear':
-        return 'headwearTalents';
-      case 'expression':
-        return 'expressionTalents';
+      case 'magicItem':
+        return 'magicItems';
+      case 'magicCreature':
+        return 'magicCreatures';
+      case 'mortalAntagonist':
+        return 'mortalAntagonists';
+      case 'setting':
+        return 'settings';
+      case 'crypticClue':
+        return 'crypticClues';
       default:
         return '';
     }
   };
 
-  const handleTalentSelect = (categoryType: string, talentId: number) => {
-    const traitType = categoryToTalentType(categoryType);
+  const handleTropeSelect = (categoryType: string, tropeId: number) => {
+    const traitType = categoryToTropeType(categoryType);
     if (!traitType) return;
 
-    setSelectedTalents((prevSelected) => {
+    setSelectedTropes((prevSelected) => {
       const newSelected = { ...prevSelected };
       const updatedSet = new Set(newSelected[traitType]);
 
-      if (updatedSet.has(talentId)) {
-        updatedSet.delete(talentId);
+      if (updatedSet.has(tropeId)) {
+        updatedSet.delete(tropeId);
       } else {
         if (updatedSet.size < 1) {
-          updatedSet.add(talentId);
+          updatedSet.add(tropeId);
         }
       }
 
@@ -627,24 +627,24 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
             <table className="w-full border-collapse border border-gray-500">
               <thead>
                 <tr>
-                  <th className="border border-gray-500 px-2 py-1">Talent Name</th>
+                  <th className="border border-gray-500 px-2 py-1">Trope Name</th>
                   <th className="border border-gray-500 px-2 py-1">Category</th>
                   <th className="border border-gray-500 px-2 py-1">Source</th>
                 </tr>
               </thead>
               <tbody>
-                {talents
-                  .filter((talent) => selectedTalents[categoryToTalentType(talent.categoryType)]?.has(talent.id))
-                  .map((talent) => {
-                    const traitTypeKey = categoryToTalentType(talent.categoryType);
+                {tropes
+                  .filter((trope) => selectedTropes[categoryToTropeType(trope.attributes?.find((attr: { trait_type: string; }) => attr.trait_type === 'Aspect')?.value || 'No text available')]?.has(trope.id))
+                  .map((trope) => {
+                    const traitTypeKey = categoryToTropeType(trope.attributes?.find((attr: { trait_type: string; }) => attr.trait_type === 'Aspect')?.value || 'No text available');
                     return (
-                      <tr key={talent._id} className="border border-gray-500">
-                        <td className="border border-gray-500 px-2 py-1" title={talent.description}>
-                          <strong>{talent.name}</strong>
+                      <tr key={trope.id} className="border border-gray-500">
+                        <td className="border border-gray-500 px-2 py-1" title={trope.description}>
+                          <strong>{trope.name}</strong>
                         </td>
-                        <td className="border border-gray-500 px-2 py-1">{talent.categoryName}</td>
+                        <td className="border border-gray-500 px-2 py-1">{trope.attributes?.find((attr: { trait_type: string; }) => attr.trait_type === 'Aspect')?.value || 'No text available'}</td>
                         <td className="border border-gray-500 px-2 py-1">
-                          {capitalizeFirstLetter(talent.categoryType)}
+                          {capitalizeFirstLetter(trope.attributes?.find((attr: { trait_type: string; }) => attr.trait_type === 'Aspect')?.value || 'No text available')}
                         </td>
                       </tr>
                     );
@@ -672,14 +672,14 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
                         <div className="flex justify-center">
                           <input
                             type="checkbox"
-                            checked={element.isRoot || !!checkedElements[element.id]}
+                            checked={true}
                             onChange={() => handleCheckboxChange(element.id)}
-                            disabled={element.isRoot}
+                            disabled={true}
                           />
                         </div>
                       </td>
                       <td className="px-4 py-2">
-                        <Link href={`/muertos/storyelements/${element.name}`} className="text-blue-500 hover:underline">
+                        <Link href={`/muertos/storyelements/${element.id}`} className="text-blue-500 hover:underline">
                           {element.name}
                         </Link>
                       </td>

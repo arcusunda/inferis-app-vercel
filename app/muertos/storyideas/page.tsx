@@ -1,8 +1,7 @@
-'use client';
-
+'use client'
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { StoryIdea } from '../../../app/types';
+import { StoryIdea, StoryElement } from '../../../app/types';
 import { useAccount } from "wagmi";
 import { NFTBaseContractAddress, NFTStakingContractAddress } from '../../../utils/utils';
 import axios from 'axios';
@@ -24,6 +23,7 @@ const StoryIdeasList = () => {
   const [voteStatus, setVoteStatus] = useState<{ [key: string]: boolean }>({});
   const [isHolder, setIsHolder] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [storyElements, setStoryElements] = useState<{ [key: string]: StoryElement[] }>({});
   const censor = new TextCensor();
   const matcher = new RegExpMatcher({
     ...englishDataset.build(),
@@ -59,20 +59,30 @@ const StoryIdeasList = () => {
       }
     };
     fetchData();
-
   }, [address]);
 
   useEffect(() => {
-
-    const fetchData = async () => {
+    const fetchStoryIdeasAndTropes = async () => {
       setLoading(true);
       const response = await fetch(`/api/storyideas/`);
       const data = await response.json();
       setStoryIdeas(data);
+
+      const tropesPromises = data.map((storyIdea: { tokenId: string; }) =>
+        fetchTropes(storyIdea.tokenId)
+      );
+      const tropesData = await Promise.all(tropesPromises);
+
+      const elementsData = data.reduce((acc: { [x: string]: any; }, storyIdea: { tokenId: string | number; }, index: number) => {
+        acc[storyIdea.tokenId] = tropesData[index];
+        return acc;
+      }, {});
+      
+      setStoryElements(elementsData);
       setLoading(false);
     };
 
-    fetchData();
+    fetchStoryIdeasAndTropes();
   }, [address]);
 
   useEffect(() => {
@@ -109,6 +119,20 @@ const StoryIdeasList = () => {
     updateVoteStatusAndLikes();
   }, [storyIdeas]);
 
+  const fetchTropes = async (tokenId: string): Promise<StoryElement[]> => {
+    try {
+      const response = await fetch(`/api/tropes/${tokenId}`);
+      if (response.ok) {
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+      }
+      return [];
+    } catch (error) {
+      console.error('Error fetching tropes:', error);
+      return [];
+    }
+  };
+
   const fetchVoteStatus = async (tokenId: number) => {
     const response = await fetch(`/api/storyideas/vote/check-vote`, {
       method: 'POST',
@@ -131,10 +155,10 @@ const StoryIdeasList = () => {
 
   const handleVoteClick = async (tokenId: number, vote: string) => {
     const voterAddress = address;
-      const comment = comments[tokenId] || '';
-      const matches = matcher.getAllMatches(comment);
-      const censoredComment = censor.applyTo(comment, matches);
-      const response = await fetch('/api/storyideas/vote', {
+    const comment = comments[tokenId] || '';
+    const matches = matcher.getAllMatches(comment);
+    const censoredComment = censor.applyTo(comment, matches);
+    const response = await fetch('/api/storyideas/vote', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -182,6 +206,11 @@ const StoryIdeasList = () => {
             Story Ideas
           </Link>
         </li>
+        <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400">
+          <Link href="/muertos/storyelements" className="text-white hover:text-gray-300">
+            Story Elements
+          </Link>
+        </li>
         <li>
           <w3m-button />
         </li>
@@ -207,97 +236,152 @@ const StoryIdeasList = () => {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-6">
-    <h1>Story Ideas</h1>
+      {renderNavigation()}
+      <h1>Story Ideas</h1>
+      <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-center text-sm sm:text-lg leading-5 sm:leading-7">
+      Ideas for episodes in the paranormal mystery series <em>Tali and the 10,000 Muertos</em>. Although they look similar to back cover book descriptions, they are actually full episode outlines so they do contain plot spoilers.
+      </p>
       <div className="w-full">
-        {storyIdeas.map((storyIdea) => (
-          <div key={storyIdea.tokenId} className="border rounded p-4 mb-6">
-            <h3>Token ID: {storyIdea.tokenId}</h3>
-            {storyIdea.image && (
-              <div className="mb-4">
-                <img
-                  src={convertIpfsUrl(storyIdea.image)}
-                  alt={`${storyIdea.tokenId} Image`}
-                  className="w-1/4 h-auto rounded"
-                />
-              </div>
-            )}
-            <div className="prose prose-lg">
-              <p>{storyIdea.text}</p>
-            </div>
-            {isHolder && (
-              <>
-                <div className="overflow-x-auto w-full">
-                  <table className="table-auto w-full border-collapse border border-gray-400">
-                    <thead>
-                      <tr>
-                        <th className="px-4 py-2 border border-gray-400 text-center">Vote</th>
-                        <th className="px-4 py-2 border border-gray-400 text-center">Comment</th>
-                        <th className="px-4 py-2 border border-gray-400 text-center">Published</th>
-                        <th className="px-4 py-2 border border-gray-400 text-center">Yes Votes</th>
-                        <th className="px-4 py-2 border border-gray-400 text-center">No Votes</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td className="px-4 py-2 border border-gray-400 text-center">
-                          <div className="flex justify-center space-x-4">
-                            <button
-                              onClick={() => handleVoteClick(storyIdea.tokenId, 'Yes')}
-                              className={`px-2 py-1 rounded ${
-                                voteStatus[storyIdea.tokenId]
-                                  ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
-                                  : 'bg-blue-500 text-white disabled:opacity-50 disabled:cursor-not-allowed'
-                              }`}
-                              disabled={true}
-                            >
-                              Yes
-                            </button>
-                            <button
-                              onClick={() => handleVoteClick(storyIdea.tokenId, 'No')}
-                              className={`px-2 py-1 rounded ${
-                                voteStatus[storyIdea.tokenId]
-                                  ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
-                                  : 'bg-red-500 text-white disabled:opacity-50 disabled:cursor-not-allowed'
-                              }`}
-                              disabled={true}
-                            >
-                              No
-                            </button>
-                          </div>
-                        </td>
-                        <td className="px-4 py-2 border border-gray-400 text-center">
-                          <input
-                            type="text"
-                            placeholder="Comment"
-                            value={comments[storyIdea.tokenId] || ''}
-                            onChange={(e) => handleCommentChange(storyIdea.tokenId, e.target.value)}
-                            className={`w-full p-2 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500 focus:outline-none ${voteStatus[storyIdea.tokenId] ? 'disabled' : ''}`}
-                            disabled={voteStatus[storyIdea.tokenId]}
-                          />
-                        </td>
-                        <td className="px-4 py-2 border border-gray-400 text-center">
-                          {storyIdea.isProse ? (
-                            <div>
-                              <img src="/published.png" alt="Published" className="inline-block ml-2 h-8 w-8" />
-                            </div>
-                          ) : (
-                            'No'
-                          )}
-                        </td>
-                        <td className="px-4 py-2 border border-gray-400 text-center">{yesVotes[storyIdea.tokenId] || 0}</td>
-                        <td className="px-4 py-2 border border-gray-400 text-center">{noVotes[storyIdea.tokenId] || 0}</td>
-                      </tr>
-                    </tbody>
-                  </table>
+        {storyIdeas.map((storyIdea) => {
+          const elements = storyElements[storyIdea.tokenId] || [];
+          const filteredElements = {
+            muerto: elements.find(e => e.attributes && e.attributes.some(attr => attr.trait_type === "Aspect" && attr.value === "Muerto")),
+            magicalItem: elements.find(e => e.attributes && e.attributes.some(attr => attr.trait_type === "Aspect" && attr.value === "Magical Item")),
+            magicalCreature: elements.find(e => e.attributes && e.attributes.some(attr => attr.trait_type === "Aspect" && attr.value === "Magical Creature")),
+            crypticClue: elements.find(e => e.attributes && e.attributes.some(attr => attr.trait_type === "Aspect" && attr.value === "Cryptic Clue")),
+            secretSociety: elements.find(e => e.attributes && e.attributes.some(attr => attr.trait_type === "Aspect" && attr.value === "Secret Society")),
+            mortalAntagonist: elements.find(e => e.attributes && e.attributes.some(attr => attr.trait_type === "Aspect" && attr.value === "Character - Mortal Antagonist")),
+          };
+
+          return (
+            <div key={storyIdea.tokenId} className="border rounded p-4 mb-6">
+              <h3>Token ID: {storyIdea.tokenId}</h3>
+              {storyIdea.image && (
+                <div className="mb-4">
+                  <img
+                    src={convertIpfsUrl(storyIdea.image)}
+                    alt={`${storyIdea.tokenId} Image`}
+                    className="w-1/4 h-auto rounded"
+                  />
                 </div>
-              </>
-            )}
-          </div>
-        ))}
+              )}
+              <div className="prose prose-lg">
+                <p>{storyIdea.text}</p>
+              </div>
+              <div className="mt-4">
+                    <h4 className="text-lg font-semibold">Story Elements</h4>
+                    {filteredElements.muerto && (
+                      <div>
+                        <label className="block text-gray-700 dark:text-gray-300">Muerto: {filteredElements.muerto.name}</label>
+                        <p>{filteredElements.muerto.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}</p>
+                      </div>
+                    )}
+                    {filteredElements.magicalItem && (
+                      <div>
+                        <label className="block text-gray-700 dark:text-gray-300">Magical Item: {filteredElements.magicalItem.name}</label>
+                        <p>{filteredElements.magicalItem.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}</p>
+                      </div>
+                    )}
+                    {filteredElements.magicalCreature && (
+                      <div>
+                        <label className="block text-gray-700 dark:text-gray-300">Magical Creature: {filteredElements.magicalCreature.name}</label>
+                        <p>{filteredElements.magicalCreature.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}</p>
+                      </div>
+                    )}
+                    {filteredElements.crypticClue && (
+                      <div>
+                        <label className="block text-gray-700 dark:text-gray-300">Cryptic Clue: {filteredElements.crypticClue.name}</label>
+                        <p>{filteredElements.crypticClue.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}</p>
+                      </div>
+                    )}
+                    {filteredElements.secretSociety && (
+                      <div>
+                        <label className="block text-gray-700 dark:text-gray-300">Secret Society: {filteredElements.secretSociety.name}</label>
+                        <p>{filteredElements.secretSociety.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}</p>
+                      </div>
+                    )}
+                    {filteredElements.mortalAntagonist && (
+                      <div>
+                        <label className="block text-gray-700 dark:text-gray-300">Mortal Antagonist: {filteredElements.mortalAntagonist.name}</label>
+                        <p>{filteredElements.mortalAntagonist.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}</p>
+                      </div>
+                    )}
+                  </div>
+              {isHolder && (
+                <>
+                  <div className="overflow-x-auto w-full">
+                    <table className="table-auto w-full border-collapse border border-gray-400">
+                      <thead>
+                        <tr>
+                          <th className="px-4 py-2 border border-gray-400 text-center">Vote</th>
+                          <th className="px-4 py-2 border border-gray-400 text-center">Comment</th>
+                          <th className="px-4 py-2 border border-gray-400 text-center">Published</th>
+                          <th className="px-4 py-2 border border-gray-400 text-center">Yes Votes</th>
+                          <th className="px-4 py-2 border border-gray-400 text-center">No Votes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="px-4 py-2 border border-gray-400 text-center">
+                            <div className="flex justify-center space-x-4">
+                              <button
+                                onClick={() => handleVoteClick(storyIdea.tokenId, 'Yes')}
+                                className={`px-2 py-1 rounded ${
+                                  voteStatus[storyIdea.tokenId]
+                                    ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                                    : 'bg-blue-500 text-white disabled:opacity-50 disabled:cursor-not-allowed'
+                                }`}
+                                disabled={voteStatus[storyIdea.tokenId]}
+                              >
+                                Yes
+                              </button>
+                              <button
+                                onClick={() => handleVoteClick(storyIdea.tokenId, 'No')}
+                                className={`px-2 py-1 rounded ${
+                                  voteStatus[storyIdea.tokenId]
+                                    ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                                    : 'bg-red-500 text-white disabled:opacity-50 disabled:cursor-not-allowed'
+                                }`}
+                                disabled={voteStatus[storyIdea.tokenId]}
+                              >
+                                No
+                              </button>
+                            </div>
+                          </td>
+                          <td className="px-4 py-2 border border-gray-400 text-center">
+                            <input
+                              type="text"
+                              placeholder="Comment"
+                              value={comments[storyIdea.tokenId] || ''}
+                              onChange={(e) => handleCommentChange(storyIdea.tokenId, e.target.value)}
+                              className={`w-full p-2 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500 focus:outline-none ${voteStatus[storyIdea.tokenId] ? 'disabled' : ''}`}
+                              disabled={voteStatus[storyIdea.tokenId]}
+                            />
+                          </td>
+                          <td className="px-4 py-2 border border-gray-400 text-center">
+                            {storyIdea.isProse ? (
+                              <div>
+                                <img src="/published.png" alt="Published" className="inline-block ml-2 h-8 w-8" />
+                              </div>
+                            ) : (
+                              'No'
+                            )}
+                          </td>
+                          <td className="px-4 py-2 border border-gray-400 text-center">{yesVotes[storyIdea.tokenId] || 0}</td>
+                          <td className="px-4 py-2 border border-gray-400 text-center">{noVotes[storyIdea.tokenId] || 0}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })}
       </div>
+      {renderNavigation()}
     </main>
   );
-  
 };
 
 export default StoryIdeasList;
