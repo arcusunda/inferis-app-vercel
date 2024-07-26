@@ -91,27 +91,27 @@ const NFTDetails = ({ params }: DetailPageProps) => {
       return [];
     }
   };
-
+  
   useEffect(() => {
     if (tokenId) {
       fetchNFTs(address as string);
-
+  
       const fetchData = async () => {
         const nftData = await fetchNFTDetails(tokenId as string);
         setNft(nftData);
-
+  
         if (nftData) {
           const fetchElementsByAspects = async () => {
             const elements = await Promise.all(aspects.map(aspect => fetchStoryElementsByAspect(aspect)));
-            const elementsMap = aspects.reduce((acc, aspect, index) => {
+            const elementsMap: { [aspect: string]: StoryElement[] } = aspects.reduce((acc, aspect, index) => {
               acc[aspect] = elements[index];
               return acc;
-            }, {});
+            }, {} as { [aspect: string]: StoryElement[] });
             setStoryElements(elementsMap);
           };
-
+  
           fetchElementsByAspects();
-
+  
           const response = await fetch(`/api/characternames?tokenId=${tokenId}`);
           if (response.ok) {
             const result = await response.json();
@@ -125,7 +125,7 @@ const NFTDetails = ({ params }: DetailPageProps) => {
       fetchData();
     }
   }, [tokenId]);
-
+  
   const handleSaveCharacter = async () => {
     if (!nft) {
       console.error('NFT is null');
