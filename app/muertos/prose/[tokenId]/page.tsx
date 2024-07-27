@@ -4,12 +4,10 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
 import { BaseNFTMetadata } from '../../../../utils/utils';
-import { StoryElement } from '../../../types';
-import { Character } from '../../../types';
+import { StoryElement, Character, Talent, NFT, Prose, Chapter } from '../../../types';
 import '@/app/globals.css';
 import { useWeb3Modal } from "@web3modal/wagmi/react"
 import { useAccount } from "wagmi"
-import { Talent, NFT, Prose, Chapter } from '../../../types';
 
 const fetchNFTDetails = async (tokenId: string): Promise<NFT | null> => {
   try {

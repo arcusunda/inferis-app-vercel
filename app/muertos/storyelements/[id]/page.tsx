@@ -3,9 +3,9 @@
 import { SetStateAction, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { StoryElement, Crafting, ChildData } from '../../../types';
-import { CurrencyAddress, IpfsBaseUrl, NFTContractAddress, NonCommercialSocialRemixingTermsId } from '../../../../utils/utils';
+import { CurrencyAddress, IpfsBaseUrl, NFTContractAddress } from '../../../../utils/utils';
 import { StoryClient, StoryConfig } from '@story-protocol/core-sdk';
-import { Account, createClient, createPublicClient, getContract, http, custom } from 'viem'
+import { custom } from 'viem'
 import { Address } from 'viem/accounts';
 import { connectMetaMask } from '../../../../utils/metamask';
 import '@/app/globals.css';

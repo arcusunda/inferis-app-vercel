@@ -4,7 +4,7 @@ import { AwaitedReactNode, JSXElementConstructor, Key, ReactElement, ReactNode, 
 import Link from 'next/link';
 import axios from 'axios';
 import { BaseNFTMetadata } from '../../../../utils/utils';
-import { Character, NFT, StoryElement } from '../../../types';
+import { NFT, StoryElement } from '../../../types';
 import '@/app/globals.css';
 import { useWeb3Modal } from "@web3modal/wagmi/react"
 import { useAccount } from "wagmi"

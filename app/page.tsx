@@ -1,13 +1,11 @@
 "use client";
-import { useEffect, useState } from 'react';
-import { Address } from 'viem';
+import { useState } from 'react';
+import { Address, custom } from 'viem';
 import { connectMetaMask } from '../utils/metamask';
 import { StoryClient, StoryConfig } from '@story-protocol/core-sdk';
-import { custom } from 'viem';
 import { StoryProtocolApiBaseUri, StoryProtocolApiChain, StoryProtocolApiKey,  
   NFTContractAddress, WBNFTContractAddress, IpfsBaseUrl, 
-  BannerImageUrl, WorldBaseMintingPage,
-  WorldBuildingPassMintingPage, WorldName, WorldSummary } from '../utils/utils';
+  WorldBuildingPassMintingPage, WorldName } from '../utils/utils';
 import axios from "axios";
 import { StoryElement } from './types';
 import { OwnedNft } from "alchemy-sdk";

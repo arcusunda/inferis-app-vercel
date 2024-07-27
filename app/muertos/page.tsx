@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect } from 'react';
-import { BannerImageUrl, WorldName, WorldSummary } from '../../utils/utils';
+import { useState } from 'react';
+import { BannerImageUrl } from '../../utils/utils';
 import Link from 'next/link';
 import { useAccount } from 'wagmi'
 
