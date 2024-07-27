@@ -37,11 +37,40 @@ export default function Home() {
       <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-left text-sm sm:text-lg leading-5 sm:leading-7">
         Once your story idea is generated, you may vote for others. The most captivating tales become part of the story's lore, celebrated as key episodes in an epic saga. Ready to see how your muerto might fit into this tale of two worlds? Step into Inferis, where every mask holds a story, and every story could be a clue to the greater mystery Talisa seeks to solve. Your muerto's journey - and perhaps the key to unlocking the secrets of Inferis - awaits.
       </p>
+      <div className="flex justify-center space-x-4 mt-4">
+    <div className="flex flex-col items-center">
+      <img
+        src="connor-sullivan.png"
+        alt="Connor"
+        className="w-200 h-200 object-cover"
+        style={{ paddingTop: '40px' }}
+      />
+      <span className="mt-2 text-center text-xs sm:text-sm">Connor</span>
+    </div>
+    <div className="flex flex-col items-center">
       <img
         src="talisa.png"
         alt="Talisa"
-        className="w-200 h-200 object-cover mx-auto sm:w-200 sm:h-200"
+        className="w-200 h-200 object-cover"
         style={{ paddingTop: '40px' }}
+      />
+      <span className="mt-2 text-center text-xs sm:text-sm">Talisa</span>
+    </div>
+    <div className="flex flex-col items-center">
+      <img
+        src="simon-langley.png"
+        alt="Simon"
+        className="w-200 h-200 object-cover"
+        style={{ paddingTop: '40px' }}
+      />
+      <span className="mt-2 text-center text-xs sm:text-sm">Simon</span>
+    </div>
+  </div>
+      <img
+        src="muertos-season-one-1600.png"
+        alt="Talisa"
+        className="w-1600 h-160 object-cover mx-auto sm:w-1600 sm:h-160"
+        style={{ paddingTop: '10px' }}
       />
       <h2 className="text-lg font-bold mt-4 sm:text-xl sm:mt-8"> Tali and the 10,000 Muertos</h2>
       <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-left text-sm sm:text-lg leading-5 sm:leading-7">
