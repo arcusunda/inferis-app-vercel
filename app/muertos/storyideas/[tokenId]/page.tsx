@@ -623,35 +623,6 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
               ))}
             </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-gray-500">
-              <thead>
-                <tr>
-                  <th className="border border-gray-500 px-2 py-1">Trope Name</th>
-                  <th className="border border-gray-500 px-2 py-1">Category</th>
-                  <th className="border border-gray-500 px-2 py-1">Source</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tropes
-                  .filter((trope) => selectedTropes[categoryToTropeType(trope.attributes?.find((attr: { trait_type: string; }) => attr.trait_type === 'Aspect')?.value || 'No text available')]?.has(trope.id))
-                  .map((trope) => {
-                    const traitTypeKey = categoryToTropeType(trope.attributes?.find((attr: { trait_type: string; }) => attr.trait_type === 'Aspect')?.value || 'No text available');
-                    return (
-                      <tr key={trope.id} className="border border-gray-500">
-                        <td className="border border-gray-500 px-2 py-1" title={trope.description}>
-                          <strong>{trope.name}</strong>
-                        </td>
-                        <td className="border border-gray-500 px-2 py-1">{trope.attributes?.find((attr: { trait_type: string; }) => attr.trait_type === 'Aspect')?.value || 'No text available'}</td>
-                        <td className="border border-gray-500 px-2 py-1">
-                          {capitalizeFirstLetter(trope.attributes?.find((attr: { trait_type: string; }) => attr.trait_type === 'Aspect')?.value || 'No text available')}
-                        </td>
-                      </tr>
-                    );
-                  })}
-              </tbody>
-            </table>
-          </div>
           <div className="mt-8 w-full">
             <h2 className="text-2xl font-bold mb-4 text-center">Story Elements</h2>
             <div className="overflow-x-auto">
