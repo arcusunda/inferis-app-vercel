@@ -38,7 +38,7 @@ export default function Home() {
         Once your story idea is generated, you may vote for others. The most captivating tales become part of the story's lore, celebrated as key episodes in an epic saga. Ready to see how your muerto might fit into this tale of two worlds? Step into Inferis, where every mask holds a story, and every story could be a clue to the greater mystery Talisa seeks to solve. Your muerto's journey - and perhaps the key to unlocking the secrets of Inferis - awaits.
       </p>
       <img
-        src="talisa-small.png"
+        src="talisa.png"
         alt="Talisa"
         className="w-200 h-200 object-cover mx-auto sm:w-200 sm:h-200"
         style={{ paddingTop: '40px' }}
