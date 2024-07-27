@@ -110,7 +110,7 @@ const StoryElementsPage = () => {
     <main className="flex min-h-screen flex-col items-center justify-between p-6">
     {renderNavigation()}
       <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-center text-sm sm:text-lg leading-5 sm:leading-7">
-      Foundational story elements already made into canon of the fictional series <em>Tali and the 10,000 Muertos</em>.
+      Foundational story elements already made into canon for the fictional series <em>Tali and the 10,000 Muertos</em>.
       </p>
       <div className="flex justify-center mb-6">
         <label htmlFor="aspect-filter" className="mr-4 text-lg">

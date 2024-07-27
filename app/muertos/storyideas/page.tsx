@@ -269,44 +269,60 @@ const StoryIdeasList = () => {
                 <p>{storyIdea.text}</p>
               </div>
               <div className="mt-4">
-                    <h4 className="text-lg font-semibold">Story Elements</h4>
-                    {filteredElements.muerto && (
-                      <div>
-                        <label className="block text-gray-700 dark:text-gray-300">Muerto: {filteredElements.muerto.name}</label>
-                        <p>{filteredElements.muerto.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}</p>
-                      </div>
-                    )}
-                    {filteredElements.magicalItem && (
-                      <div>
-                        <label className="block text-gray-700 dark:text-gray-300">Magical Item: {filteredElements.magicalItem.name}</label>
-                        <p>{filteredElements.magicalItem.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}</p>
-                      </div>
-                    )}
-                    {filteredElements.magicalCreature && (
-                      <div>
-                        <label className="block text-gray-700 dark:text-gray-300">Magical Creature: {filteredElements.magicalCreature.name}</label>
-                        <p>{filteredElements.magicalCreature.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}</p>
-                      </div>
-                    )}
-                    {filteredElements.crypticClue && (
-                      <div>
-                        <label className="block text-gray-700 dark:text-gray-300">Cryptic Clue: {filteredElements.crypticClue.name}</label>
-                        <p>{filteredElements.crypticClue.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}</p>
-                      </div>
-                    )}
-                    {filteredElements.secretSociety && (
-                      <div>
-                        <label className="block text-gray-700 dark:text-gray-300">Secret Society: {filteredElements.secretSociety.name}</label>
-                        <p>{filteredElements.secretSociety.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}</p>
-                      </div>
-                    )}
-                    {filteredElements.mortalAntagonist && (
-                      <div>
-                        <label className="block text-gray-700 dark:text-gray-300">Mortal Antagonist: {filteredElements.mortalAntagonist.name}</label>
-                        <p>{filteredElements.mortalAntagonist.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}</p>
-                      </div>
-                    )}
-                  </div>
+  <h4 className="text-lg font-semibold">Story Elements & Tropes</h4>
+  <table className="min-w-full bg-white dark:bg-gray-800">
+    <tbody>
+      {filteredElements.muerto && (
+        <tr>
+          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300">Muerto</td>
+          <td className="px-4 py-2 border border-gray-400 text-left">
+          <b>{filteredElements.muerto.name}</b> - {filteredElements.muerto.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}
+          </td>
+        </tr>
+      )}
+      {filteredElements.magicalItem && (
+        <tr>
+          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300">Magical Item</td>
+          <td className="px-4 py-2 border border-gray-400 text-left">
+          <b>{filteredElements.magicalItem.name}</b> - {filteredElements.magicalItem.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}
+          </td>
+        </tr>
+      )}
+      {filteredElements.magicalCreature && (
+        <tr>
+          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300">Magical Creature</td>
+          <td className="px-4 py-2 border border-gray-400 text-left">
+          <b>{filteredElements.magicalCreature.name}</b> - {filteredElements.magicalCreature.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}
+          </td>
+        </tr>
+      )}
+      {filteredElements.crypticClue && (
+        <tr>
+          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300">Cryptic Clue</td>
+          <td className="px-4 py-2 border border-gray-400 text-left">
+          <b>{filteredElements.crypticClue.name}</b> - {filteredElements.crypticClue.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}
+          </td>
+        </tr>
+      )}
+      {filteredElements.secretSociety && (
+        <tr>
+          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300">Secret Society</td>
+          <td className="px-4 py-2 border border-gray-400 text-left">
+          <b>{filteredElements.secretSociety.name}</b> - {filteredElements.secretSociety.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}
+          </td>
+        </tr>
+      )}
+      {filteredElements.mortalAntagonist && (
+        <tr>
+          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300">Mortal Antagonist</td>
+          <td className="px-4 py-2 border border-gray-400 text-left">
+          <b>{filteredElements.mortalAntagonist.name}</b> - {filteredElements.mortalAntagonist.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}
+          </td>
+        </tr>
+      )}
+    </tbody>
+  </table>
+</div>
               {isHolder && (
                 <>
                   <div className="overflow-x-auto w-full">
