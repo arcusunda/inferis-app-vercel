@@ -274,7 +274,7 @@ const StoryIdeasList = () => {
     <tbody>
       {filteredElements.muerto && (
         <tr>
-          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300">Muerto</td>
+          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300 align-top">Muerto</td>
           <td className="px-4 py-2 border border-gray-400 text-left">
           <b>{filteredElements.muerto.name}</b> - {filteredElements.muerto.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}
           </td>
@@ -282,7 +282,7 @@ const StoryIdeasList = () => {
       )}
       {filteredElements.magicalItem && (
         <tr>
-          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300">Magical Item</td>
+          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300 align-top">Magical Item</td>
           <td className="px-4 py-2 border border-gray-400 text-left">
           <b>{filteredElements.magicalItem.name}</b> - {filteredElements.magicalItem.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}
           </td>
@@ -290,7 +290,7 @@ const StoryIdeasList = () => {
       )}
       {filteredElements.magicalCreature && (
         <tr>
-          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300">Magical Creature</td>
+          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300 align-top">Magical Creature</td>
           <td className="px-4 py-2 border border-gray-400 text-left">
           <b>{filteredElements.magicalCreature.name}</b> - {filteredElements.magicalCreature.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}
           </td>
@@ -298,7 +298,7 @@ const StoryIdeasList = () => {
       )}
       {filteredElements.crypticClue && (
         <tr>
-          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300">Cryptic Clue</td>
+          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300 align-top">Cryptic Clue</td>
           <td className="px-4 py-2 border border-gray-400 text-left">
           <b>{filteredElements.crypticClue.name}</b> - {filteredElements.crypticClue.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}
           </td>
@@ -306,7 +306,7 @@ const StoryIdeasList = () => {
       )}
       {filteredElements.secretSociety && (
         <tr>
-          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300">Secret Society</td>
+          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300 align-top">Secret Society</td>
           <td className="px-4 py-2 border border-gray-400 text-left">
           <b>{filteredElements.secretSociety.name}</b> - {filteredElements.secretSociety.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}
           </td>
@@ -314,7 +314,7 @@ const StoryIdeasList = () => {
       )}
       {filteredElements.mortalAntagonist && (
         <tr>
-          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300">Mortal Antagonist</td>
+          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300 align-top">Mortal Antagonist</td>
           <td className="px-4 py-2 border border-gray-400 text-left">
           <b>{filteredElements.mortalAntagonist.name}</b> - {filteredElements.mortalAntagonist.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}
           </td>
