@@ -290,26 +290,67 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
     }
   }, [tokenId]);
 
-  const handlePromptClick = async () => {
+  const handleCreateStoryIdea = async () => {
     setIsLoading(true);
     setIsAiPromptCompleted(false);
-    const elementIds = tropes.map((el) => el.id).join(',');
+    const elementIds = storyElements.map((el) => el.id).join(',');
+    const tropeIds = tropes.map((trope) => trope.id).join(',');
 
     const response = await fetch(`/api/rootprompts/Logline?promptName=Logline`);
 
     const loglineData = await response.json();
 
-    const aiPrompt = loglineData.promptText;
+    const muertoPromptResponse = await fetch(`/api/rootprompts/Logline?promptName=MuertoPrompt`);
+    const muertoPromptResponseData = await muertoPromptResponse.json();
 
-    const serializedTalents = Object.fromEntries(
-      Object.entries(selectedTropes).map(([key, value]) => [key, Array.from(value)])
-    );
+    // from NFT metadata
+    const bodyAttribute = nft?.attributes.find((attr: { trait_type: string; }) => attr.trait_type === 'Body')?.value;
 
-    console.info('serializedTalents:', serializedTalents);
+    // from storyElements collection where name is the value of the 'Body' attribute from NFT metadata. Example: 'Tattooed Purple Roses'
+    const bodyResponse = await axios.get('/api/storyelements', {
+      params: {
+        muertoAttributeParam: encodeURI(bodyAttribute ? bodyAttribute : 'Unknown name')
+      },
+    });
+
+    // from the 'Text' attribute, the description of the story element. Example: 'A pair of tattooed purple roses'
+    const bodyData = bodyResponse.data.attributes.find((attr: { trait_type: string; }) => attr.trait_type === 'Text').value;
+
+    // from NFT metadata
+    const maskAttribute = nft?.attributes.find((attr: { trait_type: string; }) => attr.trait_type === 'Mask')?.value;
+
+    // from storyElements collection where name is the value of the 'Mask' attribute from NFT metadata. Example: 'Arlo'
+    const maskResponse = await axios.get('/api/storyelements', {
+      params: {
+        muertoAttributeParam: encodeURI(maskAttribute ? maskAttribute : 'Unknown name')
+      },
+    });
+
+    // from the 'Text' attribute, the description of the story element. Example: 'The Arlo mask is intricately...'
+    const maskData = maskResponse.data.attributes.find((attr: { trait_type: string; }) => attr.trait_type === 'Text').value;
+
+    // from NFT metadata
+    const headwearAttribute = nft?.attributes.find((attr: { trait_type: string; }) => attr.trait_type === 'Headwear')?.value;
+
+    // from storyElements collection where name is the value of the 'Headwear' attribute from NFT metadata. Example: 'Weirdo Blue Fairies'
+    const headwearResponse = await axios.get('/api/storyelements', {
+      params: {
+        muertoAttributeParam: encodeURI(headwearAttribute ? headwearAttribute : 'Unknown name')
+      },
+    });
+
+    let headwearData = '';
+    if(headwearResponse) {
+      // from the 'Text' attribute, the description of the story element. Example: 'The Weirdo Blue Fairies headwear are intricate winged...'
+      const headwearData = headwearResponse.data.attributes.find((attr: { trait_type: string; }) => attr.trait_type === 'Text').value;
+    }
+
+    const aiPrompt = loglineData.promptText + " " + muertoPromptResponseData.promptText + maskData + " " + bodyData + " " + headwearData;
+    
     const aiResponse = await fetch(`/api/storyelements/associations/openai`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ promptText: aiPrompt, storyElementIds: elementIds, selectedTalents: serializedTalents }),
+      body: JSON.stringify({ promptText: aiPrompt, storyElementIds: elementIds, tropeIds: tropeIds }),
     });
 
     if (aiResponse.ok) {
@@ -623,6 +664,31 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
               ))}
             </div>
           </div>
+          <div className="overflow-x-auto">
+          <h2 className="text-2xl font-bold mb-4 text-center">Selected Tropes</h2>
+          <table className="w-full border-collapse border border-gray-500">
+              <thead>
+                <tr>
+                <th className="border border-gray-500 px-2 py-1">Trope</th>
+                <th className="border border-gray-500 px-2 py-1">Name</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tropes
+                  .map((trope) => {
+                    const traitTypeKey = categoryToTropeType(trope.attributes?.find((attr: { trait_type: string; }) => attr.trait_type === 'Aspect')?.value || 'No text available');
+                    return (
+                      <tr key={trope.id} className="border border-gray-500">
+                        <td className="border border-gray-500 px-2 py-1">{trope.attributes?.find((attr: { trait_type: string; }) => attr.trait_type === 'Aspect')?.value || 'No text available'}</td>
+                        <td className="border border-gray-500 px-2 py-1" title={trope.attributes?.find((attr: { trait_type: string; }) => attr.trait_type === 'Text')?.value}>
+                          {trope.name}
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </div>
           <div className="mt-8 w-full">
             <h2 className="text-2xl font-bold mb-4 text-center">Story Elements</h2>
             <div className="overflow-x-auto">
@@ -688,9 +754,9 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
 
             <div className="flex justify-center mt-4">
               <button
-                onClick={handlePromptClick}
-                className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleCreateStoryIdea}
                 disabled={true}
+                className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Please wait...' : 'Create (Overwrite) Story Idea'}
               </button>
@@ -717,7 +783,6 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
                   className={`px-4 py-2 ${
                     isEditing ? 'bg-green-500' : 'bg-blue-500'
                   } text-white rounded disabled:opacity-50 disabled:cursor-not-allowed`}
-                  disabled={true}
                 >
                   {isSaving ? 'Please wait...' : isEditing ? 'Save Story Idea' : 'Edit'}
                 </button>

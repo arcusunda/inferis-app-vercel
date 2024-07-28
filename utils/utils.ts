@@ -49,6 +49,10 @@ export const WorldSummary = process.env.NEXT_PUBLIC_WORLD_SUMMARY || 'Unnamed'
 
 export const OpenAiModel = process.env.OPENAI_MODEL || 'Unnamed'
 
+export const vectorStoreId = process.env.VECTOR_STORE_ID || 'Unnamed'
+
+export const assistantId = process.env.ASSISTANT_ID || 'Unnamed'
+
 export const CurrencyAddress: Address = (process.env.CURRENCY_ADDRESS as Address) || '0xB132A6B7AE652c974EE1557A3521D53d18F6739f'
 
 export const WalletConnectProjectId = process.env.NEXT_PUBLIC_PROJECT_ID || 'Unnamed'

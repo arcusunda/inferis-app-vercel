@@ -1,9 +1,9 @@
 'use client'
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { StoryIdea, StoryElement } from '../../../app/types';
+import { StoryIdea, StoryElement, NFT } from '../../../app/types';
 import { useAccount } from "wagmi";
-import { NFTBaseContractAddress, NFTStakingContractAddress } from '../../../utils/utils';
+import { NFTBaseContractAddress, NFTStakingContractAddress, BaseNFTMetadata } from '../../../utils/utils';
 import axios from 'axios';
 import '@/app/globals.css';
 import ClipLoader from "react-spinners/ClipLoader";
@@ -245,7 +245,9 @@ const StoryIdeasList = () => {
         {storyIdeas.map((storyIdea) => {
           const elements = storyElements[storyIdea.tokenId] || [];
           const filteredElements = {
-            muerto: elements.find(e => e.attributes && e.attributes.some(attr => attr.trait_type === "Aspect" && attr.value === "Muerto")),
+            muertoMask: elements.find(e => e.attributes && e.attributes.some(attr => attr.trait_type === "Aspect" && attr.value === "Muerto Mask")),
+            muertoBody: elements.find(e => e.attributes && e.attributes.some(attr => attr.trait_type === "Aspect" && attr.value === "Muerto Body")),
+            muertoHeadwear: elements.find(e => e.attributes && e.attributes.some(attr => attr.trait_type === "Aspect" && attr.value === "Muerto Headwear")),
             magicalItem: elements.find(e => e.attributes && e.attributes.some(attr => attr.trait_type === "Aspect" && attr.value === "Magical Item")),
             magicalCreature: elements.find(e => e.attributes && e.attributes.some(attr => attr.trait_type === "Aspect" && attr.value === "Magical Creature")),
             crypticClue: elements.find(e => e.attributes && e.attributes.some(attr => attr.trait_type === "Aspect" && attr.value === "Cryptic Clue")),
@@ -272,11 +274,27 @@ const StoryIdeasList = () => {
   <h4 className="text-lg font-semibold">Story Elements & Tropes</h4>
   <table className="min-w-full bg-white dark:bg-gray-800">
     <tbody>
-      {filteredElements.muerto && (
+    {filteredElements.muertoMask && (
         <tr>
-          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300 align-top">Muerto</td>
+          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300 align-top">Mask</td>
           <td className="px-4 py-2 border border-gray-400 text-left">
-          <b>{filteredElements.muerto.name}</b> - {filteredElements.muerto.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}
+          <b>{filteredElements.muertoMask.name}</b> - {filteredElements.muertoMask.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}
+          </td>
+        </tr>
+      )}
+      {filteredElements.muertoBody && (
+        <tr>
+          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300 align-top">Body</td>
+          <td className="px-4 py-2 border border-gray-400 text-left">
+          <b>{filteredElements.muertoBody.name}</b> - {filteredElements.muertoBody.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}
+          </td>
+        </tr>
+      )}
+      {filteredElements.muertoHeadwear && (
+        <tr>
+          <td className="px-4 py-2 border border-gray-400 text-gray-700 dark:text-gray-300 align-top">Headwear</td>
+          <td className="px-4 py-2 border border-gray-400 text-left">
+          <b>{filteredElements.muertoHeadwear.name}</b> - {filteredElements.muertoHeadwear.attributes?.find(attr => attr.trait_type === "Text")?.value || 'Not Available'}
           </td>
         </tr>
       )}

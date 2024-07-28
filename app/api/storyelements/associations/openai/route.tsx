@@ -1,67 +1,64 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { closeMongoDB, getCollection } from '../../../../../utils/mongodb';
-import { OpenAiModel } from '../../../../../utils/utils';
-import { Talent } from '../../../../types';
+import { assistantId, vectorStoreId } from '../../../../../utils/utils';
 import OpenAI from 'openai';
-import { Collection } from 'mongodb';
 
 const openai = new OpenAI();
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
-    const { promptText, storyElementIds, selectedTalents } = await request.json();
+    const { promptText, storyElementIds, tropeIds: tropeIds } = await request.json();
 
   try {
     const storyElementIdentifiers = storyElementIds.split(',').map((id: string) => parseInt(id.trim(), 10));
-
-    const selectedTalentsSets = Object.fromEntries(
-      Object.entries(selectedTalents).map(([key, value]) => [key, new Set(value as number[])])
-    );
-
-    const talentIdentifiers: number[] = [];
-    Object.values(selectedTalentsSets).forEach((talentSet: Set<number>) => {
-      talentSet.forEach(talentId => {
-        talentIdentifiers.push(talentId);
-      });
-    });
-
-    const talentsData: Talent[] = [];
-
-    for (const [categoryKey, talentSet] of Object.entries(selectedTalentsSets)) {
-      if (talentSet instanceof Set) {
-        const talentIds = Array.from(talentSet) as number[];
-
-        if (talentIds.length > 0) {
-          const collection = (await getCollection(categoryKey)) as unknown as Collection<Talent>;
-          const fetchedTalents = await collection.find({ id: { $in: talentIds } }).toArray();
-          talentsData.push(...fetchedTalents);
-        }
-      } else {
-        console.error(`Expected Set for ${categoryKey}, but got`, typeof talentSet);
-      }
-    }
-
-    const descriptions = talentsData.map(talent => talent.description);
-    const allTalentDescriptions = descriptions.join('. ');
+    const selectedTropesIdentifiers = tropeIds.split(',').map((id: string) => parseInt(id.trim(), 10));
 
     const collection = await getCollection('storyElements');
+    const selectedTropesData = await collection.find({ id: { $in: selectedTropesIdentifiers } }).toArray();
+    const allTropeDescriptions = 
+    selectedTropesData.map(trope => 
+      trope.attributes.find((attr: { trait_type: string; }) => attr.trait_type === 'Aspect').value + ": " + trope.name + ": " + 
+      trope.attributes.find((attr: { trait_type: string; }) => attr.trait_type === 'Text').value).join(', ');
+
     const storyElementsData = await collection.find({ id: { $in: storyElementIdentifiers } }).toArray();
     const storyText = storyElementsData.map(element => {
         const textAttribute = element.attributes.find((attr: { trait_type: string; }) => attr.trait_type === 'Text');
         return textAttribute ? textAttribute.value : '';
       }).join('\n');
       
-    const finalPromptText = `${promptText}\n${storyText}.\n Character talents: ${allTalentDescriptions}`;
-    console.info(`finalPromptText: ${finalPromptText}`);
+    const finalPromptText = `${promptText}\n${storyText}.\n Story idea tropes: ${allTropeDescriptions}`;
 
+    console.info('finalPromptText:', finalPromptText);
 
-    const completion = await openai.chat.completions.create({
-      messages: [{ role: 'system', content: finalPromptText }],
-      model: OpenAiModel,
+    const assistant = await openai.beta.assistants.retrieve(assistantId);
+  
+    const thread = await openai.beta.threads.create({
+      messages: [ { role: "user", content: finalPromptText} ],
+      tool_resources: {
+        "file_search": {
+          "vector_store_ids": [vectorStoreId]
+        }
+      }
     });
 
-    const aiText = completion.choices[0].message.content;
+    let run = await openai.beta.threads.runs.createAndPoll(
+      thread.id,
+      { 
+        assistant_id: assistant.id
+      }
+    );
 
+    let aiText = '';
+    if (run.status === 'completed') {
+      const messages = await openai.beta.threads.messages.list(
+        run.thread_id
+      );
+      for (const message of messages.data.reverse()) {
+        aiText = message.content[0].type === 'text' ? message.content[0].text.value : 'No response from AI';
+      }
+    } else {
+      console.log(run.status);
+    }
     return NextResponse.json({ aiText });
 
   } catch (error) {
