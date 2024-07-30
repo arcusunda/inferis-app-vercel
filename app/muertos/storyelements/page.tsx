@@ -131,6 +131,9 @@ const StoryElementsPage = () => {
           <option value="Cryptic Clue">Cryptic Clue</option>
           <option value="Setting">Setting</option>
           <option value="Character - Mortal Antagonist">Mortal Antagonist</option>
+          <option value="Muerto Mask">Mask</option>
+          <option value="Muerto Body">Body</option>
+          <option value="Muerto Headwear">Headwear</option>
         </select>
       </div>
       {!address ? (

@@ -1,26 +1,26 @@
-'use client'
+'use client';
 
-import { AwaitedReactNode, JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
 import { BaseNFTMetadata } from '../../../../utils/utils';
 import { NFT, StoryElement } from '../../../types';
 import '@/app/globals.css';
-import { useWeb3Modal } from "@web3modal/wagmi/react"
-import { useAccount } from "wagmi"
+import { useAccount } from 'wagmi';
 import { RegExpMatcher, TextCensor, englishDataset, englishRecommendedTransformers } from 'obscenity';
+
+const aspects = [
+  "Magical Item",
+  "Magical Creature",
+  "Cryptic Clue",
+  "Secret Society",
+  "Character - Mortal Antagonist"
+];
 
 const fetchNFTDetails = async (tokenId: string): Promise<NFT | null> => {
   try {
-    console.info('tokenId:', tokenId);
     const response = await axios.get(`https://ipfs.io/ipfs/${BaseNFTMetadata}/${tokenId}.json`);
-    if (response.data) {
-      const data = await response.data;
-      return data;
-    } else {
-      console.error('Error:', response.data.error);
-      return null;
-    }
+    return response.data || null;
   } catch (error) {
     console.error('Error fetching NFT details:', error);
     return null;
@@ -50,148 +50,179 @@ type DetailPageProps = {
 const NFTDetails = ({ params }: DetailPageProps) => {
   const { tokenId } = params;
   const [nft, setNft] = useState<NFT | null>(null);
-  const [storyElements, setStoryElements] = useState<{ [aspect: string]: StoryElement[] }>({} as { [aspect: string]: StoryElement[] });
+  const [storyElements, setStoryElements] = useState<{ [aspect: string]: StoryElement[] }>({});
   const [selectedStoryElements, setSelectedStoryElements] = useState<{ [aspect: string]: number | null }>({});
   const [isOwner, setIsOwner] = useState(false);
+  const [isNameChecked, setIsNameChecked] = useState(false);
   const { address } = useAccount();
   const [givenName, setGivenName] = useState('');
   const [nameCheckResult, setNameCheckResult] = useState<string | null>(null);
   const [savedCharacterName, setSavedCharacterName] = useState<string | null>(null);
   const [isCharacterSaved, setIsCharacterSaved] = useState(false);
-  const [isNameChecked, setIsNameChecked] = useState(false);
+  const [bodyStoryElement, setBodyStoryElement] = useState<StoryElement | null>(null);
+  const [maskStoryElement, setMaskStoryElement] = useState<StoryElement | null>(null);
+  const [headwearStoryElement, setHeadwearStoryElement] = useState<StoryElement | null>(null);
   const censor = new TextCensor();
   const matcher = new RegExpMatcher({
     ...englishDataset.build(),
     ...englishRecommendedTransformers,
   });
 
-  const aspects = [
-    "Magical Item",
-    "Magical Creature",
-    "Cryptic Clue",
-    "Secret Society",
-    "Character - Mortal Antagonist"
-  ];
+  const initialAspect = aspects.length > 0 ? aspects[0] : '';
 
-  const fetchNFTs = async (address: string) => {
-    try {
-      const response = await fetch(`/api/alchemy/fetchmetadata?wallet=${address}`);
-      const data = await response.json();
-      if (response.ok) {
-        if (data.nfts) {
-          setIsOwner(data.nfts.some((nft: { tokenId: string; }) => nft.tokenId === tokenId));
-          return data.nfts;
-        }
-      }
-      setIsOwner(false);
-      return [];
-    } catch (error) {
-      console.error('Error fetching NFTs:', error);
-      setIsOwner(false);
-      return [];
-    }
-  };
-  
+  const [activeAspect, setActiveAspect] = useState<Aspect>(initialAspect);
+
   useEffect(() => {
-    if (tokenId) {
-      fetchNFTs(address as string);
-  
-      const fetchData = async () => {
-        const nftData = await fetchNFTDetails(tokenId as string);
-        setNft(nftData);
-  
-        if (nftData) {
-          const fetchElementsByAspects = async () => {
-            const elements = await Promise.all(aspects.map(aspect => fetchStoryElementsByAspect(aspect)));
-            const elementsMap: { [aspect: string]: StoryElement[] } = aspects.reduce((acc, aspect, index) => {
-              acc[aspect] = elements[index];
-              return acc;
-            }, {} as { [aspect: string]: StoryElement[] });
-            setStoryElements(elementsMap);
-          };
-  
-          fetchElementsByAspects();
-  
-          const response = await fetch(`/api/characternames?tokenId=${tokenId}`);
-          if (response.ok) {
-            const result = await response.json();
-            if (result) {
-              setSavedCharacterName(`${result.givenName} ${result.surname}`);
-              setGivenName(`${result.givenName}`);
-            }
-          }
+    const fetchNFTs = async () => {
+      if (!address) return;
+      try {
+        const response = await fetch(`/api/alchemy/fetchmetadata?wallet=${address}`);
+        if (response.ok) {
+          const data = await response.json();
+          setIsOwner(data.nfts.some((nft: { tokenId: string }) => nft.tokenId === tokenId));
         }
-      };
-      fetchData();
-    }
-  }, [tokenId]);
-  
-  const handleSaveCharacter = async () => {
-    if (!nft) {
-      console.error('NFT is null');
-      return;
-    }
-
-    console.info('nft.tokenId:', nft.tokenId);
-
-    const character = {
-      id: 1,
-      name: nft.name,
-      description: "A character sheet for this Muerto.",
-      image: nft.image,
-      wallet: address,
-      tokenId: tokenId,
-      givenName: givenName,
-      attributes: [
-        {
-          trait_type: "StoryElements",
-          value: Object.values(selectedStoryElements).filter(Boolean).join(', ')
-        }
-      ]
+      } catch (error) {
+        console.error('Error fetching NFTs:', error);
+        setIsOwner(false);
+      }
     };
 
-    const response = await fetch(`/api/characters`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(character),
-    });
+    const fetchData = async () => {
+      if (tokenId) {
+        fetchNFTs();
 
-    if (response.ok) {
-      setIsCharacterSaved(true);
-      setNameCheckResult(null);
-      setIsNameChecked(false);
-      const maskAttribute = nft.attributes.find((attr: { trait_type: string; }) => attr.trait_type === 'Mask');
-      const surname = maskAttribute ? maskAttribute.value : 'Unknown';
-      setSavedCharacterName(givenName + ' ' + surname);
-    } else {
-      console.error('Failed to save character');
+        const nftData = await fetchNFTDetails(tokenId);
+        setNft(nftData);
+
+        if (nftData) {
+          const fetchElementsByAspects = async () => {
+            try {
+              const elements = await Promise.all(aspects.map(aspect => fetchStoryElementsByAspect(aspect)));
+              const elementsMap: { [aspect: string]: StoryElement[] } = aspects.reduce((acc, aspect, index) => {
+                acc[aspect] = elements[index];
+                return acc;
+              }, {} as { [aspect: string]: StoryElement[] });
+              setStoryElements(elementsMap);
+            } catch (error) {
+              console.error('Error fetching story elements:', error);
+            }
+          };
+
+          fetchElementsByAspects();
+
+          try {
+            const response = await fetch(`/api/characternames?tokenId=${tokenId}`);
+            if (response.ok) {
+              const result = await response.json();
+              if (result) {
+                setSavedCharacterName(`${result.givenName} ${result.surname}`);
+                setGivenName(`${result.givenName}`);
+              }
+            }
+          } catch (error) {
+            console.error('Error fetching character names:', error);
+          }
+        }
+      }
+    };
+
+    fetchData();
+  }, [tokenId, address]);
+
+  useEffect(() => {
+    const fetchStoryElements = async () => {
+      if (!nft) return;
+
+      const bodyAttribute = nft.attributes.find(attr => attr.trait_type === 'Body')?.value;
+      const maskAttribute = nft.attributes.find(attr => attr.trait_type === 'Mask')?.value;
+      const headwearAttribute = nft.attributes.find(attr => attr.trait_type === 'Headwear')?.value;
+
+      try {
+        const [bodyResponse, maskResponse, headwearResponse] = await Promise.all([
+          fetch(`/api/storyelementsname/${encodeURI(bodyAttribute ?? 'Unknown name')}`),
+          fetch(`/api/storyelementsname/${encodeURI(maskAttribute ?? 'Unknown name')}`),
+          headwearAttribute ? fetch(`/api/storyelementsname/${encodeURI(headwearAttribute)}`) : Promise.resolve(null),
+        ]);
+
+        const bodyStoryElement = await bodyResponse.json();
+        const maskStoryElement = await maskResponse.json();
+        const headwearStoryElement = headwearResponse ? await headwearResponse.json() : null;
+
+        setBodyStoryElement(bodyStoryElement);
+        setMaskStoryElement(maskStoryElement);
+        setHeadwearStoryElement(headwearStoryElement);
+      } catch (error) {
+        console.error('Error fetching specific story elements:', error);
+      }
+    };
+
+    fetchStoryElements();
+  }, [nft]);
+
+  const handleSaveCharacter = async () => {
+    if (!nft || !givenName.trim()) return;
+
+    try {
+      const combinedStoryElements = [
+        ...Object.values(selectedStoryElements).filter(Boolean),
+        bodyStoryElement?.id,
+        maskStoryElement?.id,
+        headwearStoryElement?.id
+      ].filter(Boolean).join(', ');
+
+      const character = {
+        name: nft.name,
+        description: "A character sheet for this Muerto.",
+        image: nft.image,
+        wallet: address,
+        tokenId,
+        givenName,
+        attributes: [
+          {
+            trait_type: "StoryElements",
+            value: combinedStoryElements
+          }
+        ]
+      };
+
+      const response = await fetch(`/api/characters`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(character),
+      });
+
+      if (response.ok) {
+        setIsCharacterSaved(true);
+        setNameCheckResult(null);
+        setIsNameChecked(false);
+        const maskAttribute = nft.attributes.find(attr => attr.trait_type === 'Mask');
+        const surname = maskAttribute ? maskAttribute.value : 'Unknown';
+        setSavedCharacterName(givenName + ' ' + surname);
+      } else {
+        console.error('Failed to save character');
+      }
+    } catch (error) {
+      console.error('Error saving character:', error);
     }
   };
 
-  const handleGivenName = (givenName: string) => {
-    const matches = matcher.getAllMatches(givenName);
-    const censoredComment = censor.applyTo(givenName, matches);
-    setGivenName(censoredComment);
+  const handleGivenName = (name: string) => {
+    const matches = matcher.getAllMatches(name);
+    const censoredName = censor.applyTo(name, matches);
+    setGivenName(censoredName);
     setSavedCharacterName(null);
     setNameCheckResult(null);
   };
 
   const handleCheckName = async () => {
-    if (!givenName.trim()) {
-      setNameCheckResult('Please enter a given name');
-      return;
-    }
-
-    if (!nft) {
-      return;
-    }
-
-    const maskAttribute = nft?.attributes.find((attr: { trait_type: string; }) => attr.trait_type === 'Mask');
-    const surname = maskAttribute ? maskAttribute.value : 'Unknown';
+    if (!givenName.trim() || !nft) return;
 
     try {
+      const maskAttribute = nft.attributes.find(attr => attr.trait_type === 'Mask');
+      const surname = maskAttribute ? maskAttribute.value : 'Unknown';
+
       const response = await fetch(`/api/characternames`, {
         method: 'POST',
         headers: {
@@ -216,12 +247,15 @@ const NFTDetails = ({ params }: DetailPageProps) => {
     }
   };
 
-  const handleStoryElementSelect = (aspect: string, elementId: number) => {
-    setSelectedStoryElements((prevSelected) => ({
-      ...prevSelected,
-      [aspect]: prevSelected[aspect] === elementId ? null : elementId,
+  const handleStoryElementSelect = useCallback((aspect: string, elementId: number) => {
+    setSelectedStoryElements(prev => ({
+      ...prev,
+      [aspect]: prev[aspect] === elementId ? null : elementId,
     }));
-  };
+  }, []);
+
+  const memoizedStoryElements = useMemo(() => storyElements, [storyElements]);
+  const memoizedSelectedStoryElements = useMemo(() => selectedStoryElements, [selectedStoryElements]);
 
   const renderNavigation = () => (
     <nav className="bg-gray-800 p-4">
@@ -243,6 +277,58 @@ const NFTDetails = ({ params }: DetailPageProps) => {
     </nav>
   );
 
+  type Aspect = string;
+  
+  interface StoryElementsSectionProps {
+    aspects: Aspect[];
+    storyElements: { [aspect: string]: StoryElement[] };
+    selectedStoryElements: { [aspect: string]: number | null };
+    handleStoryElementSelect: (aspect: Aspect, elementId: number) => void;
+  }
+  
+  const StoryElementsSection: React.FC<StoryElementsSectionProps> = ({
+    aspects,
+    storyElements,
+    selectedStoryElements,
+    handleStoryElementSelect,
+  }) => {
+//    const [activeAspect, setActiveAspect] = useState<Aspect>(aspects.length > 0 ? aspects[0] : '');
+
+    useEffect(() => {
+      if (!aspects.includes(activeAspect)) {
+        setActiveAspect(aspects[0]);
+      }
+    }, [aspects]);
+
+    return (
+      <div>
+        <div className="tabs">
+          {aspects.map(aspect => (
+            <button
+              key={aspect}
+              onClick={() => setActiveAspect(aspect)}
+              className={`tab ${activeAspect === aspect ? 'active' : ''}`}
+            >
+              {aspect}
+            </button>
+          ))}
+        </div>
+        <div className="story-elements-grid">
+          {storyElements[activeAspect]?.map((element) => (
+            <div
+              key={element.id}
+              className={`card ${selectedStoryElements[activeAspect] === element.id ? 'selected' : ''}`}
+              onClick={() => handleStoryElementSelect(activeAspect, element.id)}
+            >
+              <h3>{element.name}</h3>
+              <p>{element.attributes?.find(attr => attr.trait_type === 'Text')?.value || 'No description available'}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+     
   return (
     <main className="flex flex-col min-h-screen p-6">
       {renderNavigation()}
@@ -274,43 +360,18 @@ const NFTDetails = ({ params }: DetailPageProps) => {
             />
             <div className="text-sm text-gray-400 w-full lg:w-1/2">
               <p className="mb-2"><strong>Token ID:</strong> {tokenId}</p>
-              {nft.attributes.map((attr: { trait_type: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; value: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; }, index: Key | null | undefined) => (
+              {nft.attributes.map((attr, index) => (
                 <p key={index} className="mb-1"><strong>{attr.trait_type}:</strong> {attr.value}</p>
               ))}
             </div>
             <div className="text-sm text-gray-400 w-full lg:w-1/2">
               <div className="mt-6">
-                <h2 className="text-lg font-bold mb-2">Select one StoryElement per Aspect. (Hover for description)</h2>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-500">
-                    <thead>
-                      <tr>
-                        <th className="border border-gray-500 px-2 py-1">Select</th>
-                        <th className="border border-gray-500 px-2 py-1">Element Name</th>
-                        <th className="border border-gray-500 px-2 py-1">Aspect</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {aspects.map(aspect => (
-                        storyElements[aspect]?.map((element) => (
-                          <tr key={element.id} className="border border-gray-500">
-                            <td className="border border-gray-500 px-2 py-1 text-center">
-                              <input
-                                type="checkbox"
-                                checked={selectedStoryElements[aspect] === element.id}
-                                onChange={() => handleStoryElementSelect(aspect, element.id)}
-                              />
-                            </td>
-                            <td className="border border-gray-500 px-2 py-1" title={element.attributes?.find((attr: { trait_type: string; }) => attr.trait_type === 'Text')?.value || 'No text available'}>
-                              <strong>{element.name}</strong>
-                            </td>
-                            <td className="border border-gray-500 px-2 py-1">{element.attributes?.find((attr: { trait_type: string; }) => attr.trait_type === 'Aspect')?.value || 'No text available'}</td>
-                          </tr>
-                        ))
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              <StoryElementsSection
+              aspects={aspects}
+              storyElements={memoizedStoryElements}
+              selectedStoryElements={memoizedSelectedStoryElements}
+              handleStoryElementSelect={handleStoryElementSelect}
+            />
               </div>
               {isCharacterSaved && (
                 <div className="mt-4">
@@ -361,7 +422,6 @@ const NFTDetails = ({ params }: DetailPageProps) => {
       )}
     </main>
   );
-
 };
 
 export default NFTDetails;

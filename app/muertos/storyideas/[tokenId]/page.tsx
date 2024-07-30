@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
 import { BaseNFTMetadata } from '../../../../utils/utils';
 import { StoryElement, Character, Talent, NFT } from '../../../types';
 import '@/app/globals.css';
-import { useWeb3Modal } from '@web3modal/wagmi/react';
 import { useAccount } from 'wagmi';
 import {
   RegExpMatcher,
@@ -19,16 +18,9 @@ const fetchNFTDetails = async (tokenId: string): Promise<NFT | null> => {
   try {
     console.info('tokenId:', tokenId);
     const response = await axios.get(`https://ipfs.io/ipfs/${BaseNFTMetadata}/${tokenId}.json`);
-
-    if (response.data) {
-      const data = await response.data;
-      return data;
-    } else {
-      console.error('Error:', response.data.error);
-      return null;
-    }
+    return response.data || null;
   } catch (error) {
-    console.error('Error fetching NFT details:', error);
+    console.error('Error fetching NFT details:', (error as any).message);
     return null;
   }
 };
@@ -39,10 +31,8 @@ const fetchStoryElements = async (attributes: { trait_type: string; value: strin
     const storyElements = await Promise.all(
       attributes.map(async (attr) => {
         const response = await fetch(`/api/storyelements/associations/${encodeURI(attr.value)}`);
-        console.info('response:', response);
         if (response.ok) {
           const data = await response.json();
-          console.info('associations data:', data);
           return Array.isArray(data) ? data : [];
         }
         return [];
@@ -51,7 +41,7 @@ const fetchStoryElements = async (attributes: { trait_type: string; value: strin
 
     return storyElements.flat();
   } catch (error) {
-    console.error('Error fetching story elements:', error);
+    console.error('Error fetching story elements:', (error as any).message);
     return [];
   }
 };
@@ -59,17 +49,15 @@ const fetchStoryElements = async (attributes: { trait_type: string; value: strin
 const fetchRootStoryElements = async (): Promise<StoryElement[]> => {
   try {
     const response = await fetch('/api/storyelements?isRoot=true');
-
     if (response.ok) {
       const data = await response.json();
-      console.info('Fetched story elements:', data);
       return Array.isArray(data) ? data : [];
     } else {
       console.error('Failed to fetch story elements:', response.statusText);
       return [];
     }
   } catch (error) {
-    console.error('Error fetching story elements:', error);
+    console.error('Error fetching story elements:', (error as any).message);
     return [];
   }
 };
@@ -83,7 +71,7 @@ const fetchTropes = async (tokenId: string): Promise<StoryElement[]> => {
     }
     return [];
   } catch (error) {
-    console.error('Error fetching talents:', error);
+    console.error('Error fetching talents:', (error as any).message);
     return [];
   }
 };
@@ -92,28 +80,63 @@ const fetchCharacterByTokenId = async (tokenId: string): Promise<Character | nul
   try {
     const response = await fetch(`/api/characters/${encodeURIComponent(tokenId)}`);
     if (response.ok) {
-      const data = await response.json();
-      return data;
+      return await response.json();
     } else {
       console.error('Failed to fetch character:', response.statusText);
       return null;
     }
   } catch (error) {
-    console.error('Error fetching character:', error);
+    console.error('Error fetching character:', (error as any).message);
     return null;
   }
 };
 
-type StoryIdeaDetailsPageProps = {
-  params: {
-    tokenId: string;
-  };
+const fetchTotalLikesCount = async (elementName: string): Promise<number> => {
+  try {
+    const response = await fetch(`/api/storyelements/vote/check-vote`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ storyElementName: elementName }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data.likes || 0;
+    }
+    return 0;
+  } catch (error) {
+    console.error('Error fetching total likes count:', (error as any).message);
+    return 0;
+  }
 };
 
-const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
+const checkVote = async (elementName: string, tokenId: string, voterAddress: string): Promise<boolean> => {
+  try {
+    const response = await fetch('/api/storyelements/vote/check-vote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        voterAddress,
+        tokenId,
+        storyElementName: elementName,
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data.likes > 0;
+    }
+    return false;
+  } catch (error) {
+    console.error('Error checking vote:', (error as any).message);
+    return false;
+  }
+};
+
+const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
   const { tokenId } = params;
   const [nft, setNft] = useState<NFT | null>(null);
-  const [nfts, setNfts] = useState([]);
+  const [nfts, setNfts] = useState<NFT[]>([]);
   const [storyElements, setStoryElements] = useState<StoryElement[]>([]);
   const [tropes, setTropes] = useState<StoryElement[]>([]);
   const [aiText, setAiText] = useState<string>('');
@@ -125,12 +148,14 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
   const [isStoryIdeaLoaded, setIsStoryIdeaLoaded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const { address } = useAccount();
-  const baseStat = 10;
   const [givenName, setGivenName] = useState('');
   const [nameCheckResult, setNameCheckResult] = useState<string | null>(null);
   const [savedCharacterName, setSavedCharacterName] = useState<string | null>(null);
   const [isCharacterSaved, setIsCharacterSaved] = useState(false);
   const [isNameChecked, setIsNameChecked] = useState(false);
+  const [maskStoryElement, setMaskStoryElement] = useState<StoryElement | null>(null);
+  const [bodyStoryElement, setBodyStoryElement] = useState<StoryElement | null>(null);
+  const [headwearStoryElement, setHeadwearStoryElement] = useState<StoryElement | null>(null);
   const censor = new TextCensor();
   const matcher = new RegExpMatcher({
     ...englishDataset.build(),
@@ -151,38 +176,28 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
   const fetchNFTs = async (address: string) => {
     try {
       const response = await fetch(`/api/alchemy/fetchmetadata?wallet=${address}`);
-      const data = await response.json();
       if (response.ok) {
-        if (data.nfts) {
-          setNfts(data.nfts);
-          const nfts: NFT[] = data.nfts;
-          const nftFound = nfts.find((nft) => nft.tokenId === tokenId);
-          if (!nftFound) {
-            setNft(null);
-            setIsOwner(false);
-            return;
-          }
-          setNft(nftFound);
-          setIsOwner(true);
-        }
-        return data.nfts;
+        const data = await response.json();
+        setNfts(data.nfts || []);
+        const nftFound = data.nfts.find((nft: NFT) => nft.tokenId === tokenId);
+        setNft(nftFound || null);
+        setIsOwner(!!nftFound);
       } else {
+        console.error('Error:', response.statusText);
         setIsOwner(false);
-        console.error('Error:', data.error);
-        return [];
       }
     } catch (error) {
-      console.error('Error fetching NFTs:', error);
-      return [];
+      console.error('Error fetching NFTs:', (error as any).message);
+      setIsOwner(false);
     }
   };
 
   useEffect(() => {
-    if (tokenId) {
-      fetchNFTs(address as string);
+    if (tokenId && address) {
+      fetchNFTs(address);
 
       const fetchData = async () => {
-        const nftData = await fetchNFTDetails(tokenId as string);
+        const nftData = await fetchNFTDetails(tokenId);
         setNft(nftData);
         if (nftData) {
           const storyElementsData = await fetchStoryElements(nftData.attributes);
@@ -198,9 +213,7 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
 
           const initialCheckedElements: { [key: number]: boolean } = combinedStoryElementsData.reduce(
             (acc, element) => {
-              if (element.isRoot) {
-                acc[element.id] = true;
-              }
+              if (element.isRoot) acc[element.id] = true;
               return acc;
             },
             {} as { [key: number]: boolean }
@@ -210,12 +223,13 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
 
           const voteStatusData = await Promise.all(
             storyElementsData.map(async (element) => {
-              const voteCount = await checkVote(element.name);
-              return { [element.name]: voteCount > 0 };
+              const hasVoted = await checkVote(element.name, tokenId, address);
+              return { [element.name]: hasVoted };
             })
           );
 
           setVoteStatus(Object.assign({}, ...voteStatusData));
+
           const likesData = await Promise.all(
             storyElementsData.map(async (element) => {
               const likes = await fetchTotalLikesCount(element.name);
@@ -225,12 +239,10 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
 
           setLikes(Object.assign({}, ...likesData));
 
-          const tropesData = await fetchTropes(tokenId as string);
+          const tropesData = await fetchTropes(tokenId);
           setTropes(tropesData);
 
-          console.info(`tokenId: ${tokenId}`);
           const characterData = await fetchCharacterByTokenId(tokenId);
-
           if (characterData) {
             const tropeMap: { [key: string]: Set<number> } = {
               magicItems: new Set(),
@@ -261,25 +273,24 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
             setSelectedTropes(tropeMap);
             setIsCharacterSaved(true);
           }
+
           const maskAttribute = nftData.attributes.find((attr) => attr.trait_type === 'Mask');
           const surname = maskAttribute ? maskAttribute.value : 'Unknown';
 
-          const response = await fetch(`/api/characternames?tokenId=${tokenId}`);
-          if (response.ok) {
-            const result = await response.json();
+          const nameResponse = await fetch(`/api/characternames?tokenId=${tokenId}`);
+          if (nameResponse.ok) {
+            const result = await nameResponse.json();
             if (result) {
               setSavedCharacterName(`${result.givenName} ${result.surname}`);
               setGivenName(`${result.givenName}`);
             }
           }
 
-          // Check if a StoryIdea exists
           const storyIdeaResponse = await fetch(`/api/storyideas/${tokenId}`);
           if (storyIdeaResponse.ok) {
             const storyIdeaResult = await storyIdeaResponse.json();
             if (storyIdeaResult) {
-              console.info('Story Idea:', storyIdeaResult);
-              setAiText(`${storyIdeaResult.text}`);
+              setAiText(storyIdeaResult.text);
               setIsStoryIdeaLoaded(true);
               setIsAiPromptCompleted(true);
             }
@@ -288,7 +299,29 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
       };
       fetchData();
     }
-  }, [tokenId]);
+  }, [tokenId, address]);
+
+  useEffect(() => {
+    if (nft) {
+      const fetchStoryElements = async () => {
+        const bodyAttribute = nft.attributes.find((attr) => attr.trait_type === 'Body')?.value;
+        const maskAttribute = nft.attributes.find((attr) => attr.trait_type === 'Mask')?.value;
+        const headwearAttribute = nft.attributes.find((attr) => attr.trait_type === 'Headwear')?.value;
+
+        const [bodyResponse, maskResponse, headwearResponse] = await Promise.all([
+          fetch(`/api/storyelementsname/${encodeURI(bodyAttribute || 'Unknown name')}`),
+          fetch(`/api/storyelementsname/${encodeURI(maskAttribute || 'Unknown name')}`),
+          headwearAttribute ? fetch(`/api/storyelementsname/${encodeURI(headwearAttribute)}`) : Promise.resolve(null),
+        ]);
+
+        setBodyStoryElement(await bodyResponse.json());
+        setMaskStoryElement(await maskResponse.json());
+        setHeadwearStoryElement(headwearResponse ? await headwearResponse.json() : null);
+      };
+
+      fetchStoryElements();
+    }
+  }, [nft]);
 
   const handleCreateStoryIdea = async () => {
     setIsLoading(true);
@@ -296,131 +329,65 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
     const elementIds = storyElements.map((el) => el.id).join(',');
     const tropeIds = tropes.map((trope) => trope.id).join(',');
 
-    const response = await fetch(`/api/rootprompts/Logline?promptName=Logline`);
+    const [loglineResponse, muertoPromptResponse] = await Promise.all([
+      fetch(`/api/rootprompts/Logline?promptName=Logline`),
+      fetch(`/api/rootprompts/Logline?promptName=MuertoPrompt`),
+    ]);
 
-    const loglineData = await response.json();
+    const loglineData = await loglineResponse.json();
+    const muertoPromptData = await muertoPromptResponse.json();
 
-    const muertoPromptResponse = await fetch(`/api/rootprompts/Logline?promptName=MuertoPrompt`);
-    const muertoPromptResponseData = await muertoPromptResponse.json();
+    const bodyData = bodyStoryElement?.attributes?.find((attr) => attr.trait_type === 'Text')?.value || '';
+    const maskData = maskStoryElement?.attributes?.find((attr) => attr.trait_type === 'Text')?.value || '';
+    const headwearData = headwearStoryElement?.attributes?.find((attr) => attr.trait_type === 'Text')?.value || '';
 
-    // from NFT metadata
-    const bodyAttribute = nft?.attributes.find((attr: { trait_type: string; }) => attr.trait_type === 'Body')?.value;
+    const headwearPrompt = headwearData ? ` Muerto Headwear: ${headwearData}` : '';
 
-    // from storyElements collection where name is the value of the 'Body' attribute from NFT metadata. Example: 'Tattooed Purple Roses'
-    const bodyResponse = await axios.get('/api/storyelements', {
-      params: {
-        muertoAttributeParam: encodeURI(bodyAttribute ? bodyAttribute : 'Unknown name')
-      },
-    });
+    const aiPrompt = `${loglineData.promptText} ${muertoPromptData.promptText} Muerto Mask: ${maskData} Muerto Body: ${bodyData} ${headwearPrompt}`;
 
-    // from the 'Text' attribute, the description of the story element. Example: 'A pair of tattooed purple roses'
-    const bodyData = bodyResponse.data.attributes.find((attr: { trait_type: string; }) => attr.trait_type === 'Text').value;
+    try {
+      const aiResponse = await fetch(`/api/storyelements/associations/openai`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ promptText: aiPrompt, storyElementIds: elementIds, tropeIds }),
+      });
 
-    // from NFT metadata
-    const maskAttribute = nft?.attributes.find((attr: { trait_type: string; }) => attr.trait_type === 'Mask')?.value;
-
-    // from storyElements collection where name is the value of the 'Mask' attribute from NFT metadata. Example: 'Arlo'
-    const maskResponse = await axios.get('/api/storyelements', {
-      params: {
-        muertoAttributeParam: encodeURI(maskAttribute ? maskAttribute : 'Unknown name')
-      },
-    });
-
-    // from the 'Text' attribute, the description of the story element. Example: 'The Arlo mask is intricately...'
-    const maskData = maskResponse.data.attributes.find((attr: { trait_type: string; }) => attr.trait_type === 'Text').value;
-
-    // from NFT metadata
-    const headwearAttribute = nft?.attributes.find((attr: { trait_type: string; }) => attr.trait_type === 'Headwear')?.value;
-
-    // from storyElements collection where name is the value of the 'Headwear' attribute from NFT metadata. Example: 'Weirdo Blue Fairies'
-    const headwearResponse = await axios.get('/api/storyelements', {
-      params: {
-        muertoAttributeParam: encodeURI(headwearAttribute ? headwearAttribute : 'Unknown name')
-      },
-    });
-
-    let headwearData = '';
-    if(headwearResponse) {
-      // from the 'Text' attribute, the description of the story element. Example: 'The Weirdo Blue Fairies headwear are intricate winged...'
-      const headwearData = headwearResponse.data.attributes.find((attr: { trait_type: string; }) => attr.trait_type === 'Text').value;
+      if (aiResponse.ok) {
+        const aiData = await aiResponse.json();
+        setAiText(aiData.aiText);
+        setIsAiPromptCompleted(true);
+      }
+    } catch (error) {
+      console.error('Error creating story idea:', (error as any).message);
+    } finally {
+      setIsLoading(false);
     }
-
-    const aiPrompt = loglineData.promptText + " " + muertoPromptResponseData.promptText + maskData + " " + bodyData + " " + headwearData;
-    
-    const aiResponse = await fetch(`/api/storyelements/associations/openai`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ promptText: aiPrompt, storyElementIds: elementIds, tropeIds: tropeIds }),
-    });
-
-    if (aiResponse.ok) {
-      const aiData = await aiResponse.json();
-      setAiText(aiData.aiText);
-      setIsAiPromptCompleted(true);
-    }
-    setIsLoading(false);
-  };
-
-  const fetchTotalLikesCount = async (elementName: string) => {
-    const voterAddress = address;
-    const response = await fetch(`/api/storyelements/vote/check-vote`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ storyElementName: elementName }),
-    });
-
-    const data = await response.json();
-    return data.likes;
-  };
-
-  const checkVote = async (elementName: string) => {
-    const voterAddress = address;
-
-    const response = await fetch('/api/storyelements/vote/check-vote', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        voterAddress,
-        tokenId,
-        storyElementName: elementName,
-      }),
-    });
-
-    const data = await response.json();
-    return data.likes;
   };
 
   const handleLikeClick = async (elementName: string) => {
-    const voterAddress = address;
     const comment = comments[elementName] || '';
     const vote = 'Yes';
 
-    const response = await fetch('/api/storyelements/vote', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        voterAddress,
-        tokenId,
-        storyElementName: elementName,
-        vote,
-        comment,
-      }),
-    });
+    try {
+      const response = await fetch('/api/storyelements/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          voterAddress: address,
+          tokenId,
+          storyElementName: elementName,
+          vote,
+          comment,
+        }),
+      });
 
-    if (response.ok) {
-      const data = await response.json();
-      setLikes((prevLikes) => ({
-        ...prevLikes,
-        [elementName]: data.likes,
-      }));
-      setVoteStatus((prevStatus) => ({
-        ...prevStatus,
-        [elementName]: true,
-      }));
+      if (response.ok) {
+        const data = await response.json();
+        setLikes((prevLikes) => ({ ...prevLikes, [elementName]: data.likes }));
+        setVoteStatus((prevStatus) => ({ ...prevStatus, [elementName]: true }));
+      }
+    } catch (error) {
+      console.error('Error liking element:', (error as any).message);
     }
   };
 
@@ -444,7 +411,7 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
       image: nft.image,
       wallet: address,
       tokenId: nft.tokenId,
-      givenName: givenName,
+      givenName,
       attributes: [
         {
           trait_type: 'StoryElements',
@@ -459,22 +426,25 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
       ],
     };
 
-    const response = await fetch(`/api/characters`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(character),
-    });
+    try {
+      const response = await fetch(`/api/characters`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(character),
+      });
 
-    if (response.ok) {
-      const data = await response.json();
-      setIsCharacterSaved(true);
-      setGivenName('');
-      setNameCheckResult(null);
-      setIsNameChecked(false);
-    } else {
-      console.error('Failed to save character');
+      if (response.ok) {
+        setIsCharacterSaved(true);
+        setGivenName('');
+        setNameCheckResult(null);
+        setIsNameChecked(false);
+      } else {
+        console.error('Failed to save character');
+      }
+    } catch (error) {
+      console.error('Error saving character:', (error as any).message);
     }
   };
 
@@ -489,30 +459,34 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
     setIsSaving(true);
     const storyIdea = {
       text: aiText,
-      tokenId: tokenId as string,
+      tokenId,
       image: nft?.image,
       state: 'Draft',
     };
 
-    const response = await fetch('/api/storyideas', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(storyIdea),
-    });
+    try {
+      const response = await fetch('/api/storyideas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(storyIdea),
+      });
 
-    if (response.ok) {
-      const data = await response.json();
-      setIsStoryIdeaLoaded(true);
-      setIsEditing(false);
-    } else {
-      console.error('Failed to save story idea');
+      if (response.ok) {
+        setIsStoryIdeaLoaded(true);
+        setIsEditing(false);
+      } else {
+        console.error('Failed to save story idea');
+      }
+    } catch (error) {
+      console.error('Error saving story idea:', (error as any).message);
+    } finally {
+      setIsSaving(false);
     }
-    setIsSaving(false);
   };
 
-  const categoryToTropeType = (categoryType: string): string => {
+  const categoryToTropeType = useCallback((categoryType: string): string => {
     switch (categoryType) {
       case 'magicItem':
         return 'magicItems';
@@ -527,7 +501,7 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
       default:
         return '';
     }
-  };
+  }, []);
 
   const handleTropeSelect = (categoryType: string, tropeId: number) => {
     const traitType = categoryToTropeType(categoryType);
@@ -540,9 +514,7 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
       if (updatedSet.has(tropeId)) {
         updatedSet.delete(tropeId);
       } else {
-        if (updatedSet.size < 1) {
-          updatedSet.add(tropeId);
-        }
+        updatedSet.add(tropeId);
       }
 
       newSelected[traitType] = updatedSet;
@@ -556,10 +528,10 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
     setAiText(censoredAiText);
   };
 
-  const handleGivenName = (givenName: string) => {
-    const matches = matcher.getAllMatches(givenName);
-    const censoredComment = censor.applyTo(givenName, matches);
-    setGivenName(censoredComment);
+  const handleGivenName = (name: string) => {
+    const matches = matcher.getAllMatches(name);
+    const censoredName = censor.applyTo(name, matches);
+    setGivenName(censoredName);
     setSavedCharacterName(null);
     setNameCheckResult(null);
   };
@@ -570,43 +542,36 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
       return;
     }
 
-    if (!nft) {
-      return;
-    }
+    if (!nft) return;
 
-    const maskAttribute = nft?.attributes.find((attr) => attr.trait_type === 'Mask');
+    const maskAttribute = nft.attributes.find((attr) => attr.trait_type === 'Mask');
     const surname = maskAttribute ? maskAttribute.value : 'Unknown';
 
     try {
       const response = await fetch(`/api/characternames`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ givenName, surname, tokenId: parseInt(tokenId, 10) }),
       });
-
-      const result = await response.json();
 
       if (response.ok) {
         setNameCheckResult('Name available.');
         setIsNameChecked(true);
       } else {
+        const result = await response.json();
         setNameCheckResult(result.error || 'Error checking name');
         setIsNameChecked(false);
       }
     } catch (error) {
-      console.error('Error checking name:', error);
+      console.error('Error checking name:', (error as any).message);
       setNameCheckResult('Error checking name');
       setIsNameChecked(false);
     }
   };
 
-  const capitalizeFirstLetter = (string: string) => {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  };
+  const capitalizeFirstLetter = (string: string) => string.charAt(0).toUpperCase() + string.slice(1);
 
-  const renderNavigation = () => (
+  const renderNavigation = useCallback(() => (
     <nav className="bg-gray-800 p-4">
       <ul className="flex justify-center items-center space-x-4">
         <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400">
@@ -624,7 +589,7 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
         </li>
       </ul>
     </nav>
-  );
+  ), []);
 
   return (
     <main className="flex flex-col min-h-screen p-6">
@@ -645,7 +610,7 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
         </div>
       ) : (
         <div className="flex flex-col justify-center items-center h-full">
-          <h2 className="text-lg font-bold mb-2">{savedCharacterName ? savedCharacterName : nft.name}</h2>
+          <h2 className="text-lg font-bold mb-2">{savedCharacterName || nft.name}</h2>
           <div className="flex flex-col lg:flex-row items-center lg:items-start lg:space-x-6 w-full">
             <img
               src={nft.image.replace('ipfs://', 'https://ipfs.io/ipfs/')}
@@ -665,27 +630,28 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
             </div>
           </div>
           <div className="overflow-x-auto">
-          <h2 className="text-2xl font-bold mb-4 text-center">Selected Tropes</h2>
-          <table className="w-full border-collapse border border-gray-500">
+            <h2 className="text-2xl font-bold mb-4 text-center">Selected Tropes</h2>
+            <table className="w-full border-collapse border border-gray-500">
               <thead>
                 <tr>
-                <th className="border border-gray-500 px-2 py-1">Trope</th>
-                <th className="border border-gray-500 px-2 py-1">Name</th>
+                  <th className="border border-gray-500 px-2 py-1">Trope</th>
+                  <th className="border border-gray-500 px-2 py-1">Name</th>
                 </tr>
               </thead>
               <tbody>
-                {tropes
-                  .map((trope) => {
-                    const traitTypeKey = categoryToTropeType(trope.attributes?.find((attr: { trait_type: string; }) => attr.trait_type === 'Aspect')?.value || 'No text available');
-                    return (
-                      <tr key={trope.id} className="border border-gray-500">
-                        <td className="border border-gray-500 px-2 py-1">{trope.attributes?.find((attr: { trait_type: string; }) => attr.trait_type === 'Aspect')?.value || 'No text available'}</td>
-                        <td className="border border-gray-500 px-2 py-1" title={trope.attributes?.find((attr: { trait_type: string; }) => attr.trait_type === 'Text')?.value}>
-                          {trope.name}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                {tropes.map((trope) => (
+                  <tr key={trope.id} className="border border-gray-500">
+                    <td className="border border-gray-500 px-2 py-1">
+                      {trope.attributes?.find((attr: { trait_type: string }) => attr.trait_type === 'Aspect')?.value || 'No text available'}
+                    </td>
+                    <td
+                      className="border border-gray-500 px-2 py-1"
+                      title={trope.attributes?.find((attr: { trait_type: string }) => attr.trait_type === 'Text')?.value}
+                    >
+                      {trope.name}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -709,9 +675,9 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
                         <div className="flex justify-center">
                           <input
                             type="checkbox"
-                            checked={true}
+                            checked={checkedElements[element.id]}
                             onChange={() => handleCheckboxChange(element.id)}
-                            disabled={true}
+                            disabled={!element.isRoot}
                           />
                         </div>
                       </td>
@@ -726,9 +692,9 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
                           className={`px-2 py-1 rounded ${
                             voteStatus[element.name]
                               ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
-                              : 'bg-blue-500 text-white disabled:opacity-50 disabled:cursor-not-allowed'
+                              : 'bg-blue-500 text-white'
                           }`}
-                          disabled={true}
+                          disabled={voteStatus[element.name]}
                         >
                           Like
                         </button>
@@ -740,9 +706,7 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
                           placeholder="Comment"
                           value={comments[element.name] || ''}
                           onChange={(e) => handleCommentChange(element.name, e.target.value)}
-                          className={`w-full p-2 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500 focus:outline-none ${
-                            voteStatus[element.name] ? 'disabled' : ''
-                          }`}
+                          className="w-full p-2 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
                           disabled={voteStatus[element.name]}
                         />
                       </td>
@@ -792,7 +756,7 @@ const StoryIdeaDetails = ({ params }: StoryIdeaDetailsPageProps) => {
         </div>
       )}
       {renderNavigation()}
-      </main>
+    </main>
   );
 };
 

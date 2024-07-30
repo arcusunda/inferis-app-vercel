@@ -37,13 +37,15 @@ export default function Home() {
       <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-left text-sm sm:text-lg leading-5 sm:leading-7">
         Once your story idea is generated, you may vote for others. The most captivating tales become part of the story's lore, celebrated as key episodes in an epic saga. Ready to see how your muerto might fit into this tale of two worlds? Step into Inferis, where every mask holds a story, and every story could be a clue to the greater mystery Talisa seeks to solve. Your muerto's journey - and perhaps the key to unlocking the secrets of Inferis - awaits.
       </p>
-      <div className="flex justify-center space-x-4 mt-4">
+      <h2 className="text-lg font-bold mt-4 sm:text-xl sm:mt-8"         style={{ paddingTop: '10px' }}
+      > Tali and the 10,000 Muertos</h2>
+      <div className="flex justify-center space-x-2 mt-2">
     <div className="flex flex-col items-center">
       <img
         src="connor-sullivan.png"
         alt="Connor"
         className="w-200 h-200 object-cover"
-        style={{ paddingTop: '40px' }}
+        style={{ paddingTop: '1px' }}
       />
       <span className="mt-2 text-center text-xs sm:text-sm">Connor</span>
     </div>
@@ -52,7 +54,7 @@ export default function Home() {
         src="talisa.png"
         alt="Talisa"
         className="w-200 h-200 object-cover"
-        style={{ paddingTop: '40px' }}
+        style={{ paddingTop: '1px' }}
       />
       <span className="mt-2 text-center text-xs sm:text-sm">Talisa</span>
     </div>
@@ -61,7 +63,7 @@ export default function Home() {
         src="simon-langley.png"
         alt="Simon"
         className="w-200 h-200 object-cover"
-        style={{ paddingTop: '40px' }}
+        style={{ paddingTop: '1px' }}
       />
       <span className="mt-2 text-center text-xs sm:text-sm">Simon</span>
     </div>
@@ -70,9 +72,8 @@ export default function Home() {
         src="muertos-season-one-1600.png"
         alt="Talisa"
         className="w-1600 h-160 object-cover mx-auto sm:w-1600 sm:h-160"
-        style={{ paddingTop: '10px' }}
+        style={{ paddingTop: '5px' }}
       />
-      <h2 className="text-lg font-bold mt-4 sm:text-xl sm:mt-8"> Tali and the 10,000 Muertos</h2>
       <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-left text-sm sm:text-lg leading-5 sm:leading-7">
       In the coastal town of Eldridge Hollow, where the supernatural and mundane coexist uneasily, Talisa Esperanza is born (on The Day of the Dead) into a family with a rich Mexican-American heritage and a lineage of psychic abilities. Talisa's gifts awaken fully on her seventeen birthday, the day she discovers that she can see and communicate with spirits—muertos—trapped between worlds. However, these abilities come with a heavy burden: the muertos are drawn to Talisa, seeking her help to escape a sinister fate. The evil sorcerer Valtor trapped these spirits by dredging up their most shameful secrets and deepest regrets, using these nightmarish memories to force them into creating their own emotional and psychic prisons. These prisons manifest physically in the dark realm of Inferis, where the muertos are condemned to endlessly relive their worst fears. Valtor feeds on the potent emotions generated within these prisons, gaining strength from their suffering. Talisa's unique sensitivity allows her to establish a psychic connection with the trapped spirits. Through this connection, the muertos project a semblance of themselves, a totem, which provides Talisa with clues about their unresolved issues. With this information, she can research and uncover what they need to break free from their emotional bonds. Moreover, Talisa has the rare ability to journey into Inferis through a portal created by the muerto's totem, where she confronts the private hells of these spirits, helping them resolve their pain and escape Valtor's grip. As Talisa navigates the complexities of high school life, a life after the mysterious deaths of her parents, she also delves into the spiritual and cultural fabric of Eldridge Hollow, a town built on an ancient convergence of ley lines that amplify supernatural activity. The town's diverse population, rich history, and eerie folklore create a tapestry of stories and secrets, many of which are tied to Talisa's own family. With the help of her friends, including the logical and resourceful Simon Langley and the protective Connor Sullivan, Talisa takes on the role of a mediator, helping the muertos find peace and move on to Los Muertos World. However, Talisa's journey is fraught with danger. Malevolent entities, dark secrets, and the enigmatic Guardians of the Veil—a secret society aware of the town's mystical significance—pose constant threats. As Talisa delves deeper into her parents' mysterious deaths, she uncovers connections to the darker aspects of the spiritual world, raising the stakes in her quest to protect her loved ones and bring peace to the trapped souls.
       </p>
