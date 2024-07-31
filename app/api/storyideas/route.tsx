@@ -24,21 +24,38 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const storyIdea: StoryIdea = await request.json();
+    storyIdea.tokenId = Number(storyIdea.tokenId); // Ensure tokenId is a number
 
     const collection = await getCollection('storyIdeas');
 
-    const result = await collection.findOneAndUpdate(
-      { tokenId: storyIdea.tokenId },
-      { $set: storyIdea },
-      { upsert: true, returnDocument: 'after' }
+    const existingStoryIdea = await collection.findOne(
+      { tokenId: storyIdea.tokenId }
     );
 
-    console.info('POST /api/storyideas', storyIdea.text, result);
-    if (result && result.ok) {
-      return NextResponse.json({ info: 'StoryIdea saved successfully' }, { status: 200 });
+    storyIdea.updated = new Date();
+    if (existingStoryIdea) {
+      storyIdea.created = existingStoryIdea.created;
+      const result = await collection.updateOne(
+        { tokenId: storyIdea.tokenId },
+        { $set: storyIdea }
+      );
+      if (result && result.acknowledged) {
+        return NextResponse.json({ info: 'StoryIdea updated successfully' }, { status: 200 });
+      } else {
+        return NextResponse.json({ result: `${result}` }, { status: 200 });
+      }
     } else {
-      return NextResponse.json({ result: `${result}` }, { status: 200 });
+      storyIdea.created = new Date();
+      const result = await collection.insertOne(storyIdea);
+      if (result && result.acknowledged) {
+        return NextResponse.json({ info: 'StoryIdea created successfully' }, { status: 200 });
+      } else {
+        return NextResponse.json({ result: `${result}` }, { status: 200 });
+      }
+    
     }
+
+
   } catch (error) {
     console.error('Internal Server Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -46,3 +63,4 @@ export async function POST(request: NextRequest) {
     closeMongoDB();
   }
 }
+

@@ -109,6 +109,8 @@ export interface Character {
   wallet: string;
   tokenId: number;
   attributes: Attribute[];
+  created: Date;
+  updated?: Date;
 }
 
 export type Quest = {
@@ -125,8 +127,11 @@ export type StoryIdea = {
   tokenId: number;
   text: string;
   image: string;
+  created: Date;
+  updated?: Date;
   state: 'Draft';
   isProse: boolean;
+  wallet: string;
 };
 
 export type Chapter = {

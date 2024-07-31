@@ -180,7 +180,9 @@ const NFTDetails = ({ params }: DetailPageProps) => {
         wallet: address,
         tokenId,
         givenName,
-        attributes: [
+        created: new Date(),
+        updated: new Date(),
+              attributes: [
           {
             trait_type: "StoryElements",
             value: combinedStoryElements

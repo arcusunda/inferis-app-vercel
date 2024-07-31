@@ -8,17 +8,20 @@ export async function POST(request: NextRequest) {
   try {
     const character: Character = await request.json();
 
-    const tokenId = parseInt(character.tokenId as unknown as string, 10);
+    character.tokenId = parseInt(character.tokenId as unknown as string, 10);
 
-    console.info('Character tokenId:', tokenId);
-
-    if (isNaN(tokenId)) {
-      return NextResponse.json({ error: 'Invalid tokenId format' }, { status: 400 });
-    }
-
-    character.tokenId = tokenId;
+    console.info('Character tokenId:', character.tokenId);
 
     const collection = await getCollection('characters');
+
+    const existingCharacter = await collection.findOne(
+      { tokenId: character.tokenId }
+    );
+
+    character.updated = new Date();
+    if (existingCharacter) {
+      character.created = existingCharacter.created;
+    }
 
     const result = await collection.findOneAndUpdate(
       { tokenId: character.tokenId },

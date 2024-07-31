@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
   const { pathname } = new URL(request.url);
   const tokenId = pathname.split('/').pop()?.replaceAll('%20', ' ');
 
+  console.info('GET /api/storyideas/ tokenId: ', tokenId);
   if (!tokenId || typeof tokenId !== 'string') {
     return NextResponse.json({ error: 'Invalid tokenId format' }, { status: 400 });
   }
@@ -16,8 +17,9 @@ export async function GET(request: NextRequest) {
   try {
     const collection = await getCollection('storyIdeas');
 
-    console.info('GET /api/storyideas/', tokenIdNumber);
+    console.info('tokenIdNumber: ', tokenIdNumber);
     let storyIdea: StoryIdea | null = await collection.findOne<StoryIdea>({ tokenId: tokenIdNumber });
+    console.info('storyIdea: ', storyIdea);
     return NextResponse.json(storyIdea);
   } catch (error) {
     console.error('Internal Server Error:', error);

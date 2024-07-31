@@ -37,6 +37,9 @@ export default function Home() {
       <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-left text-sm sm:text-lg leading-5 sm:leading-7">
         Once your story idea is generated, you may vote for others. The most captivating tales become part of the story's lore, celebrated as key episodes in an epic saga. Ready to see how your muerto might fit into this tale of two worlds? Step into Inferis, where every mask holds a story, and every story could be a clue to the greater mystery Talisa seeks to solve. Your muerto's journey - and perhaps the key to unlocking the secrets of Inferis - awaits.
       </p>
+      <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-left text-sm sm:text-lg leading-5 sm:leading-7">
+        Disclaimer: This implementation of StoryElement is still in Beta testing for the series <em>Tali and the 10,000 Muertos</em>. Please be patient as we work to improve the experience and expand the features available to you. We appreciate your feedback and suggestions as we continue to develop this exciting new way to engage with the community. Story elements are subject to change and any story ideas generated could potentially be reset. Feel free to save those you generate externally.
+      </p>
       <h2 className="text-lg font-bold mt-4 sm:text-xl sm:mt-8"         style={{ paddingTop: '10px' }}
       > Tali and the 10,000 Muertos</h2>
       <div className="flex justify-center space-x-2 mt-2">

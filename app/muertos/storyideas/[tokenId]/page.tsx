@@ -4,8 +4,9 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
 import { BaseNFTMetadata } from '../../../../utils/utils';
-import { StoryElement, Character, Talent, NFT } from '../../../types';
+import { StoryElement, Character, Talent, NFT, StoryIdea } from '../../../types';
 import '@/app/globals.css';
+import { useRouter } from 'next/navigation';
 import { useAccount } from 'wagmi';
 import {
   RegExpMatcher,
@@ -91,6 +92,21 @@ const fetchCharacterByTokenId = async (tokenId: string): Promise<Character | nul
   }
 };
 
+const fetchStoryIdeaByTokenId = async (tokenId: string): Promise<StoryIdea | null> => {
+  try {
+    const response = await fetch(`/api/storyideas/${encodeURIComponent(tokenId)}`);
+    if (response.ok) {
+      return await response.json();
+    } else {
+      console.error('Failed to fetch StoryIdea:', response.statusText);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching StoryIdea:', (error as any).message);
+    return null;
+  }
+};
+
 const fetchTotalLikesCount = async (elementName: string): Promise<number> => {
   try {
     const response = await fetch(`/api/storyelements/vote/check-vote`, {
@@ -134,6 +150,7 @@ const checkVote = async (elementName: string, tokenId: string, voterAddress: str
 };
 
 const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
+  const router = useRouter();
   const { tokenId } = params;
   const [nft, setNft] = useState<NFT | null>(null);
   const [nfts, setNfts] = useState<NFT[]>([]);
@@ -146,7 +163,8 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
   const [checkedElements, setCheckedElements] = useState<{ [key: number]: boolean }>({});
   const [isOwner, setIsOwner] = useState(false);
   const [isStoryIdeaLoaded, setIsStoryIdeaLoaded] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isSaved, setSaved] = useState(false);
+  const [showSaveMessage, setShowSaveMessage] = useState(false);
   const { address } = useAccount();
   const [givenName, setGivenName] = useState('');
   const [nameCheckResult, setNameCheckResult] = useState<string | null>(null);
@@ -270,6 +288,11 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
               }
             });
 
+            const storyIdeaData = await fetchStoryIdeaByTokenId(tokenId);
+            if(storyIdeaData) {
+              console.info('storyIdeaData:', storyIdeaData.text);
+            }
+
             setSelectedTropes(tropeMap);
             setIsCharacterSaved(true);
           }
@@ -323,46 +346,72 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
     }
   }, [nft]);
 
+  useEffect(() => {
+    if (isAiPromptCompleted) {
+      // Save the story idea as soon as AI prompt is completed
+      handleSaveStoryIdea();
+    }
+  }, [isAiPromptCompleted]);
+
+  useEffect(() => {
+    if (aiText) {
+      const timerId = setTimeout(() => {
+        handleSaveStoryIdea();
+      }, 500); // Adjust the debounce time as necessary
+
+      return () => clearTimeout(timerId);
+    }
+  }, [aiText]);
+
   const handleCreateStoryIdea = async () => {
     setIsLoading(true);
     setIsAiPromptCompleted(false);
-    const elementIds = storyElements.map((el) => el.id).join(',');
-    const tropeIds = tropes.map((trope) => trope.id).join(',');
 
-    const [loglineResponse, muertoPromptResponse] = await Promise.all([
+    const [loglineResponse] = await Promise.all([
       fetch(`/api/rootprompts/Logline?promptName=Logline`),
-      fetch(`/api/rootprompts/Logline?promptName=MuertoPrompt`),
     ]);
 
-    const loglineData = await loglineResponse.json();
-    const muertoPromptData = await muertoPromptResponse.json();
-
-    const bodyData = bodyStoryElement?.attributes?.find((attr) => attr.trait_type === 'Text')?.value || '';
-    const maskData = maskStoryElement?.attributes?.find((attr) => attr.trait_type === 'Text')?.value || '';
-    const headwearData = headwearStoryElement?.attributes?.find((attr) => attr.trait_type === 'Text')?.value || '';
-
-    const headwearPrompt = headwearData ? ` Muerto Headwear: ${headwearData}` : '';
-
-    const aiPrompt = `${loglineData.promptText} ${muertoPromptData.promptText} Muerto Mask: ${maskData} Muerto Body: ${bodyData} ${headwearPrompt}`;
+    const loglineData = await loglineResponse.json()
 
     try {
-      const aiResponse = await fetch(`/api/storyelements/associations/openai`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ promptText: aiPrompt, storyElementIds: elementIds, tropeIds }),
-      });
+        const elementIds = storyElements.map((el) => el.id).join(',');
+        const tropeIds = tropes.map((trope) => trope.id).join(',');
 
-      if (aiResponse.ok) {
-        const aiData = await aiResponse.json();
-        setAiText(aiData.aiText);
-        setIsAiPromptCompleted(true);
-      }
+        const bodyData = bodyStoryElement?.attributes?.find((attr) => attr.trait_type === 'Text')?.value || '';
+        const maskData = maskStoryElement?.attributes?.find((attr) => attr.trait_type === 'Text')?.value || '';
+        const headwearData = headwearStoryElement?.attributes?.find((attr) => attr.trait_type === 'Text')?.value || '';
+
+        const aiPrompt = `${loglineData.promptText}`;
+
+        const requestBody = {
+            aiPrompt,
+            storyElementIds: elementIds,
+            tropeIds,
+            bodyData,
+            maskData,
+            headwearData,
+        };
+
+        const aiResponse = await fetch('/api/storyelements/associations/openai', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody),
+        });
+
+        if (aiResponse.ok) {
+            const aiData = await aiResponse.json();
+            setAiText(aiData.aiText);
+            setIsAiPromptCompleted(true);
+        } else {
+            console.error('Error fetching AI response:', aiResponse.statusText);
+        }
     } catch (error) {
       console.error('Error creating story idea:', (error as any).message);
     } finally {
       setIsLoading(false);
     }
-  };
+};
+
 
   const handleLikeClick = async (elementName: string) => {
     const comment = comments[elementName] || '';
@@ -455,27 +504,30 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
     }));
   };
 
+  const handleEditButtonClick = () => {
+    if (isSaved) {
+      handleSaveStoryIdea();
+    } else {
+      setSaved(true);
+    }
+  };
+
   const handleSaveStoryIdea = async () => {
     setIsSaving(true);
-    const storyIdea = {
-      text: aiText,
-      tokenId,
-      image: nft?.image,
-      state: 'Draft',
-    };
-
     try {
       const response = await fetch('/api/storyideas', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(storyIdea),
+        body: JSON.stringify({ text: aiText, tokenId, image: nft?.image, state: 'Draft', address }),
       });
 
       if (response.ok) {
         setIsStoryIdeaLoaded(true);
-        setIsEditing(false);
+        setSaved(true);
+        setShowSaveMessage(true); // Show the save message
+        setTimeout(() => setShowSaveMessage(false), 3000); // Hide the message after 3 seconds
       } else {
         console.error('Failed to save story idea');
       }
@@ -570,6 +622,13 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
   };
 
   const capitalizeFirstLetter = (string: string) => string.charAt(0).toUpperCase() + string.slice(1);
+
+  const handleAiTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const inputText = event.target.value;
+    const matches = matcher.getAllMatches(inputText);
+    const censoredText = censor.applyTo(inputText, matches);
+    setAiText(censoredText);
+  };
 
   const renderNavigation = useCallback(() => (
     <nav className="bg-gray-800 p-4">
@@ -722,39 +781,40 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
             <div className="flex justify-center mt-4">
               <button
                 onClick={handleCreateStoryIdea}
-                disabled={true}
-                className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`px-4 py-2 rounded ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 text-white'}`}
+                disabled={isLoading}
               >
-                {isLoading ? 'Please wait...' : 'Create (Overwrite) Story Idea'}
+                {isLoading ? 'Please wait...' : 'Create New Story Idea'}
               </button>
-            </div>
+          </div>
 
-            <div className="mt-6 w-full flex justify-center">
-              {isStoryIdeaLoaded && !isEditing ? (
-                <div className="w-full lg:w-1/2 p-2 bg-gray-700 text-white rounded border border-gray-500 text-lg">
-                  {aiText}
-                </div>
-              ) : (
-                <textarea
-                  className="w-full lg:w-1/2 h-32 p-2 bg-gray-700 text-white border border-gray-500 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  value={aiText}
-                  onChange={(e) => handleAiText(e.target.value)}
-                />
-              )}
-            </div>
-
-            {isAiPromptCompleted && (
-              <div className="flex justify-center mt-4 mb-4">
-                <button
-                  onClick={isStoryIdeaLoaded && !isEditing ? () => setIsEditing(true) : handleSaveStoryIdea}
-                  className={`px-4 py-2 ${
-                    isEditing ? 'bg-green-500' : 'bg-blue-500'
-                  } text-white rounded disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  {isSaving ? 'Please wait...' : isEditing ? 'Save Story Idea' : 'Edit'}
-                </button>
+          <div className="mt-6 w-full flex justify-center">
+            {isStoryIdeaLoaded && !isSaved ? (
+              <div className="w-full lg:w-1/2 p-2 bg-gray-700 text-white rounded border border-gray-500 text-lg">
+                {aiText}
               </div>
+            ) : (
+              <textarea
+                className="w-full lg:w-1/2 h-32 p-2 bg-gray-700 text-white border border-gray-500 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                value={aiText}
+                onChange={handleAiTextChange}
+              />
             )}
+          </div>
+          {showSaveMessage && (
+            <div className="mt-4 text-center text-green-500">
+              Story idea saved
+            </div>
+          )}
+
+          {isStoryIdeaLoaded && (
+            <div className="mt-8 w-full flex justify-center">
+              <Link href="/muertos/storyideas" className="bg-blue-500 text-white px-4 py-2 rounded">
+                  View Story Ideas
+              </Link>
+            </div>
+          )}
+                
           </div>
         </div>
       )}
