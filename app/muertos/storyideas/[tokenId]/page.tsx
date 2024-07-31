@@ -631,6 +631,9 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
           </div>
           <div className="overflow-x-auto">
             <h2 className="text-2xl font-bold mb-4 text-center">Selected Tropes</h2>
+            <p className="mb-2 text-s mb-4 text-center">
+                Missing Mask or Body? Check back soon.
+              </p>
             <table className="w-full border-collapse border border-gray-500">
               <thead>
                 <tr>
