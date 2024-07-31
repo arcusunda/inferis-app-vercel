@@ -8,6 +8,7 @@ import { NFT, StoryElement } from '../../../types';
 import '@/app/globals.css';
 import { useAccount } from 'wagmi';
 import { RegExpMatcher, TextCensor, englishDataset, englishRecommendedTransformers } from 'obscenity';
+import { useRouter } from 'next/navigation';
 
 const aspects = [
   "Magical Item",
@@ -49,6 +50,7 @@ type DetailPageProps = {
 
 const NFTDetails = ({ params }: DetailPageProps) => {
   const { tokenId } = params;
+  const router = useRouter();
   const [nft, setNft] = useState<NFT | null>(null);
   const [storyElements, setStoryElements] = useState<{ [aspect: string]: StoryElement[] }>({});
   const [selectedStoryElements, setSelectedStoryElements] = useState<{ [aspect: string]: number | null }>({});
@@ -58,7 +60,6 @@ const NFTDetails = ({ params }: DetailPageProps) => {
   const [givenName, setGivenName] = useState('');
   const [nameCheckResult, setNameCheckResult] = useState<string | null>(null);
   const [savedCharacterName, setSavedCharacterName] = useState<string | null>(null);
-  const [isCharacterSaved, setIsCharacterSaved] = useState(false);
   const [bodyStoryElement, setBodyStoryElement] = useState<StoryElement | null>(null);
   const [maskStoryElement, setMaskStoryElement] = useState<StoryElement | null>(null);
   const [headwearStoryElement, setHeadwearStoryElement] = useState<StoryElement | null>(null);
@@ -87,7 +88,8 @@ const NFTDetails = ({ params }: DetailPageProps) => {
       }
     };
 
-    const fetchData = async () => {
+//    if (router.isReady) {
+      const fetchData = async () => {
       if (tokenId) {
         fetchNFTs();
 
@@ -126,8 +128,9 @@ const NFTDetails = ({ params }: DetailPageProps) => {
       }
     };
 
-    fetchData();
-  }, [tokenId, address]);
+      fetchData();
+//    }
+  }, [/*router.isReady, */tokenId, address]);
 
   useEffect(() => {
     const fetchStoryElements = async () => {
@@ -160,7 +163,7 @@ const NFTDetails = ({ params }: DetailPageProps) => {
   }, [nft]);
 
   const handleSaveCharacter = async () => {
-    if (!nft || !givenName.trim()) return;
+    if (!nft/* || !givenName.trim()*/) return;
 
     try {
       const combinedStoryElements = [
@@ -194,12 +197,8 @@ const NFTDetails = ({ params }: DetailPageProps) => {
       });
 
       if (response.ok) {
-        setIsCharacterSaved(true);
-        setNameCheckResult(null);
-        setIsNameChecked(false);
-        const maskAttribute = nft.attributes.find(attr => attr.trait_type === 'Mask');
-        const surname = maskAttribute ? maskAttribute.value : 'Unknown';
-        setSavedCharacterName(givenName + ' ' + surname);
+        // Navigate to the story ideas page after saving the character
+        router.push(`/muertos/storyideas/${tokenId}`);
       } else {
         console.error('Failed to save character');
       }
@@ -302,7 +301,8 @@ const NFTDetails = ({ params }: DetailPageProps) => {
 
     return (
       <div>
-        <div className="tabs">
+            <h2 className="text-2xl font-bold mb-4 text-center">Select your Story Elements</h2>
+            <div className="tabs">
           {aspects.map(aspect => (
             <button
               key={aspect}
@@ -366,55 +366,20 @@ const NFTDetails = ({ params }: DetailPageProps) => {
             </div>
             <div className="text-sm text-gray-400 w-full lg:w-1/2">
               <div className="mt-6">
-              <StoryElementsSection
-              aspects={aspects}
-              storyElements={memoizedStoryElements}
-              selectedStoryElements={memoizedSelectedStoryElements}
-              handleStoryElementSelect={handleStoryElementSelect}
-            />
+                <StoryElementsSection
+                  aspects={aspects}
+                  storyElements={memoizedStoryElements}
+                  selectedStoryElements={memoizedSelectedStoryElements}
+                  handleStoryElementSelect={handleStoryElementSelect}
+                />
               </div>
-              {isCharacterSaved && (
-                <div className="mt-4">
-                  <label htmlFor="givenName" className="block mb-2 text-xs font-medium text-gray-300">
-                    Given Name
-                  </label>
-                  <div className="flex items-center">
-                    <input
-                      type="text"
-                      id="givenName"
-                      className="input-text"
-                      value={givenName}
-                      onChange={(e) => handleGivenName(e.target.value)}
-                    />
-                    <button
-                      className="ml-2 px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-700 text-xs"
-                      onClick={isNameChecked ? handleSaveCharacter : handleCheckName}
-                    >
-                      {isNameChecked ? 'Save' : 'Check'}
-                    </button>
-                  </div>
-                  {nameCheckResult && (
-                    <p className="mt-2 text-xs text-white-500">{nameCheckResult}</p>
-                  )}
-                </div>
-              )}
               <div className="flex justify-center mt-4">
-                {isCharacterSaved ? (
-                  <Link href={`/muertos/storyideas/${tokenId}`} key={tokenId} className="border border-gray-300 rounded-lg p-4 max-w-xs text-center">
-                    <button
-                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-                    >
-                      Create Story Idea
-                    </button>
-                  </Link>
-                ) : (
-                  <button
-                    onClick={handleSaveCharacter}
-                    className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
-                  >
-                    Save Character
-                  </button>
-                )}
+                <button
+                  onClick={handleSaveCharacter}
+                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
+                >
+                  Save Character
+                </button>
               </div>
             </div>
           </div>

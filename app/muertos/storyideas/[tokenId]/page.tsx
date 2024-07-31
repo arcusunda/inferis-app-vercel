@@ -689,13 +689,13 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
                       <td className="px-4 py-2">
                         <button
                           onClick={() => handleLikeClick(element.name)}
-                          className={`px-2 py-1 rounded ${
+                          className={`px-2 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed ${
                             voteStatus[element.name]
                               ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
                               : 'bg-blue-500 text-white'
                           }`}
-                          disabled={voteStatus[element.name]}
-                        >
+                          disabled={true}
+                          >
                           Like
                         </button>
                       </td>
