@@ -8,7 +8,7 @@ import { config } from '@/config'
 import Web3ModalProvider from '@/context'
 
 export const metadata: Metadata = {
-  title: 'Inferis',
+  title: ' Tali and the 10,000 Muertos',
   description: 'Unravel mysteries and explore the paranormal with Tali and the 10,000 Muertos.'
 }
 
