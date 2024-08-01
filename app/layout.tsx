@@ -9,7 +9,7 @@ import Web3ModalProvider from '@/context'
 
 export const metadata: Metadata = {
   title: 'Inferis',
-  description: 'The underworld.'
+  description: 'Unravel mysteries and explore the paranormal with Tali and the 10,000 Muertos.'
 }
 
 export default function RootLayout({
