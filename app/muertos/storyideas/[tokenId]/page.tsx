@@ -391,11 +391,17 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
             maskData,
             headwearData,
         };
-
+/*
         const aiResponse = await fetch('/api/storyelements/associations/openai', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestBody),
+        });
+*/
+        const aiResponse = await fetch('/api/claude', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody),
         });
 
         if (aiResponse.ok) {

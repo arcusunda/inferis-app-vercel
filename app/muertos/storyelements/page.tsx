@@ -94,7 +94,7 @@ const StoryElementsPage = () => {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-gray-900 text-white">
         <ClipLoader color="#ffffff" loading={loading} size={50} />
-        <p className="mt-4">Loading your Story Elements...</p>
+        <p className="mt-4">Loading Story Elements...</p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
           {[1, 2, 3].map((_, index) => (
             <div key={index} className="border rounded p-6 bg-gray-800 animate-pulse">

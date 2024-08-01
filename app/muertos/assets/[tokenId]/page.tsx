@@ -366,6 +366,14 @@ const NFTDetails = ({ params }: DetailPageProps) => {
                 <p key={index} className="mb-1"><strong>{attr.trait_type}:</strong> {attr.value}</p>
               ))}
             </div>
+            <div className="flex justify-center mt-4">
+                <button
+                  onClick={handleSaveCharacter}
+                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
+                >
+                  Save Character
+                </button>
+              </div>
             <div className="text-sm text-gray-400 w-full lg:w-1/2">
               <div className="mt-6">
                 <StoryElementsSection

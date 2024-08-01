@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.25.0",
     "@story-protocol/core-sdk": "^1.0.0-rc.15",
     "@web3modal/wagmi": "^5.0.6",
     "alchemy-sdk": "^3.3.1",
