@@ -281,7 +281,7 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
                     </Link>
                 </li>
                 <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400 dark:after:bg-gray-600">
-                    <Link href="/" className="text-white hover:text-gray-300">
+                    <Link href="/muertos" className="text-white hover:text-gray-300">
                         Home
                     </Link>
                 </li>
@@ -346,7 +346,6 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
                             onChange={handleAspectFilterChange}
                             className="bg-gray-700 text-white rounded px-4 py-2 dark:bg-gray-800 dark:text-gray-200"
                         >
-                            <option value="Magical Item">Select One</option>
                             <option value="Magical Item">Magical Item</option>
                             <option value="Magical Creature">Magical Creature</option>
                             <option value="Magic System">Magic System</option>

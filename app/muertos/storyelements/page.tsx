@@ -69,7 +69,7 @@ const StoryElementsPage = () => {
           </Link>
         </li>
         <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400">
-          <Link href="/" className="text-white hover:text-gray-300">
+          <Link href="/muertos" className="text-white hover:text-gray-300">
             Home
           </Link>
         </li>
