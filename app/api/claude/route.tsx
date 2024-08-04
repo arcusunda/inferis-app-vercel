@@ -5,7 +5,7 @@ import Anthropic from '@anthropic-ai/sdk';
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
-    const { aiPrompt, storyElementIds, tropeIds, bodyData, maskData, headwearData } = await request.json();
+    const { aiPrompt, storyElementIds, tropeIds, bodyData, maskData, expressionData, headwearData } = await request.json();
 
     try {
         const storyElementIdentifiers = storyElementIds.split(',').map((id: string) => parseInt(id.trim(), 10));
@@ -23,6 +23,7 @@ export async function POST(request: NextRequest) {
             secretSociety: '[Secret Society]',
             muertoMask: maskData,
             muertoBody: bodyData,
+            muertoExpression: expressionData,
             muertoHeadwear: headwearData
         };
 
@@ -36,6 +37,7 @@ export async function POST(request: NextRequest) {
             'Secret Society': 'secretSociety',
             'Muerto Mask': 'muertoMask',
             'Muerto Body': 'muertoBody',
+            'Muerto Expression': 'muertoExpression',
             'Muerto Headwear': 'muertoHeadwear'
         };
 
@@ -56,6 +58,7 @@ export async function POST(request: NextRequest) {
             .replaceAll('[Secret Society]', values.secretSociety)
             .replaceAll('[Muerto Mask]', values.muertoMask)
             .replaceAll('[Muerto Body]', values.muertoBody)
+            .replaceAll('[Muerto Expression]', values.muertoExpression)
             .replaceAll('[Muerto Headwear]', values.muertoHeadwear);
         
         console.info('finalPromptText:', finalPromptText);

@@ -62,6 +62,7 @@ const NFTDetails = ({ params }: DetailPageProps) => {
   const [savedCharacterName, setSavedCharacterName] = useState<string | null>(null);
   const [bodyStoryElement, setBodyStoryElement] = useState<StoryElement | null>(null);
   const [maskStoryElement, setMaskStoryElement] = useState<StoryElement | null>(null);
+  const [expressionStoryElement, setExpressionStoryElement] = useState<StoryElement | null>(null);
   const [headwearStoryElement, setHeadwearStoryElement] = useState<StoryElement | null>(null);
   const censor = new TextCensor();
   const matcher = new RegExpMatcher({
@@ -138,21 +139,25 @@ const NFTDetails = ({ params }: DetailPageProps) => {
 
       const bodyAttribute = nft.attributes.find(attr => attr.trait_type === 'Body')?.value;
       const maskAttribute = nft.attributes.find(attr => attr.trait_type === 'Mask')?.value;
+      const expressionAttribute = nft.attributes.find(attr => attr.trait_type === 'Expression')?.value;
       const headwearAttribute = nft.attributes.find(attr => attr.trait_type === 'Headwear')?.value;
 
       try {
-        const [bodyResponse, maskResponse, headwearResponse] = await Promise.all([
+        const [bodyResponse, maskResponse, expressionResponse, headwearResponse] = await Promise.all([
           fetch(`/api/storyelementsname/${encodeURI(bodyAttribute ?? 'Unknown name')}`),
           fetch(`/api/storyelementsname/${encodeURI(maskAttribute ?? 'Unknown name')}`),
+          fetch(`/api/storyelementsname/${encodeURI(expressionAttribute ?? 'Unknown name')}`),
           headwearAttribute ? fetch(`/api/storyelementsname/${encodeURI(headwearAttribute)}`) : Promise.resolve(null),
         ]);
 
         const bodyStoryElement = await bodyResponse.json();
         const maskStoryElement = await maskResponse.json();
+        const expressionStoryElement = await expressionResponse.json();
         const headwearStoryElement = headwearResponse ? await headwearResponse.json() : null;
 
         setBodyStoryElement(bodyStoryElement);
         setMaskStoryElement(maskStoryElement);
+        setExpressionStoryElement(expressionStoryElement);
         setHeadwearStoryElement(headwearStoryElement);
       } catch (error) {
         console.error('Error fetching specific story elements:', error);
@@ -170,6 +175,7 @@ const NFTDetails = ({ params }: DetailPageProps) => {
         ...Object.values(selectedStoryElements).filter(Boolean),
         bodyStoryElement?.id,
         maskStoryElement?.id,
+        expressionStoryElement?.id,
         headwearStoryElement?.id
       ].filter(Boolean).join(', ');
 

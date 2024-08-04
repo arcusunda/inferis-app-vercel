@@ -172,6 +172,7 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
   const [isCharacterSaved, setIsCharacterSaved] = useState(false);
   const [isNameChecked, setIsNameChecked] = useState(false);
   const [maskStoryElement, setMaskStoryElement] = useState<StoryElement | null>(null);
+  const [expressionStoryElement, setExpressionStoryElement] = useState<StoryElement | null>(null);
   const [bodyStoryElement, setBodyStoryElement] = useState<StoryElement | null>(null);
   const [headwearStoryElement, setHeadwearStoryElement] = useState<StoryElement | null>(null);
   const censor = new TextCensor();
@@ -329,16 +330,19 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
       const fetchStoryElements = async () => {
         const bodyAttribute = nft.attributes.find((attr) => attr.trait_type === 'Body')?.value;
         const maskAttribute = nft.attributes.find((attr) => attr.trait_type === 'Mask')?.value;
+        const expressionAttribute = nft.attributes.find((attr) => attr.trait_type === 'Expression')?.value;
         const headwearAttribute = nft.attributes.find((attr) => attr.trait_type === 'Headwear')?.value;
 
-        const [bodyResponse, maskResponse, headwearResponse] = await Promise.all([
+        const [bodyResponse, maskResponse, expressionResponse, headwearResponse] = await Promise.all([
           fetch(`/api/storyelementsname/${encodeURI(bodyAttribute || 'Unknown name')}`),
           fetch(`/api/storyelementsname/${encodeURI(maskAttribute || 'Unknown name')}`),
+          fetch(`/api/storyelementsname/${encodeURI(expressionAttribute || 'Unknown name')}`),
           headwearAttribute ? fetch(`/api/storyelementsname/${encodeURI(headwearAttribute)}`) : Promise.resolve(null),
         ]);
 
         setBodyStoryElement(await bodyResponse.json());
         setMaskStoryElement(await maskResponse.json());
+        setExpressionStoryElement(await expressionResponse.json());
         setHeadwearStoryElement(headwearResponse ? await headwearResponse.json() : null);
       };
 
@@ -379,6 +383,7 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
 
         const bodyData = bodyStoryElement?.attributes?.find((attr) => attr.trait_type === 'Text')?.value || '';
         const maskData = maskStoryElement?.attributes?.find((attr) => attr.trait_type === 'Text')?.value || '';
+        const expressionData = expressionStoryElement?.attributes?.find((attr) => attr.trait_type === 'Text')?.value || '';
         const headwearData = headwearStoryElement?.attributes?.find((attr) => attr.trait_type === 'Text')?.value || '';
 
         const aiPrompt = `${loglineData.promptText}`;
@@ -389,6 +394,7 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
             tropeIds,
             bodyData,
             maskData,
+            expressionData,
             headwearData,
         };
 /*
@@ -702,7 +708,7 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
           <div className="overflow-x-auto">
             <h2 className="text-2xl font-bold mb-4 text-center">Selected Tropes</h2>
             <p className="mb-2 text-xs mb-4 text-center">
-                Missing Mask or Body? Check back soon.
+                Missing Mask, Body, or Expression? Check back soon.
               </p>
             <table className="w-full border-collapse border border-gray-500">
               <thead>
