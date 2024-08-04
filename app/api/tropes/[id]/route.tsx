@@ -33,14 +33,14 @@ export async function GET(request: NextRequest) {
   
       const storyElementsCollection = await getCollection('storyElements');
       const storyElements = await storyElementsCollection.find({ id: { $in: storyElementIds } }).toArray();
-  
-      console.log(storyElements);
-  
+ 
       if (!storyElements) {
         return NextResponse.json({ error: 'Tropes not found' }, { status: 404 });
       }
 
       return NextResponse.json(storyElements);
+    } else {
+      return NextResponse.json({ error: 'Character not found' }, { status: 404 });
     }
 } catch (error) {
     console.error('Internal Server Error:', error);

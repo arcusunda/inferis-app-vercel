@@ -54,7 +54,7 @@ export default function Home() {
     </div>
     <div className="flex flex-col items-center">
       <img
-        src="talisa.png"
+        src="talisa-200.png"
         alt="Talisa"
         className="w-200 h-200 object-cover"
         style={{ paddingTop: '1px' }}

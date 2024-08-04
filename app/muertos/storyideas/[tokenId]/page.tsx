@@ -645,6 +645,11 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
           </Link>
         </li>
         <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400">
+          <Link href="/muertos/storyelements/create" className="text-white hover:text-gray-300">
+            Story Elements
+          </Link>
+        </li>
+        <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400">
           <Link href="/muertos/storyideas/" className="text-white hover:text-gray-300">
             Story Ideas
           </Link>
@@ -696,7 +701,7 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
           </div>
           <div className="overflow-x-auto">
             <h2 className="text-2xl font-bold mb-4 text-center">Selected Tropes</h2>
-            <p className="mb-2 text-s mb-4 text-center">
+            <p className="mb-2 text-xs mb-4 text-center">
                 Missing Mask or Body? Check back soon.
               </p>
             <table className="w-full border-collapse border border-gray-500">

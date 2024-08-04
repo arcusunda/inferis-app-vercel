@@ -49,14 +49,14 @@ export async function POST(request: NextRequest) {
         });
 
         const finalPromptText = aiPrompt
-            .replace('[Mortal Antagonist]', values.mortalAntagonist)
-            .replace('[Magical Creature]', values.magicalCreature)
-            .replace('[Magical Item]', values.magicalItem)
-            .replace('[Cryptic Clue]', values.crypticClue)
-            .replace('[Secret Society]', values.secretSociety)
-            .replace('[Muerto Mask]', values.muertoMask)
-            .replace('[Muerto Body]', values.muertoBody)
-            .replace('[Muerto Headwear]', values.muertoHeadwear);
+            .replaceAll('[Mortal Antagonist]', values.mortalAntagonist)
+            .replaceAll('[Magical Creature]', values.magicalCreature)
+            .replaceAll('[Magical Item]', values.magicalItem)
+            .replaceAll('[Cryptic Clue]', values.crypticClue)
+            .replaceAll('[Secret Society]', values.secretSociety)
+            .replaceAll('[Muerto Mask]', values.muertoMask)
+            .replaceAll('[Muerto Body]', values.muertoBody)
+            .replaceAll('[Muerto Headwear]', values.muertoHeadwear);
         
         console.info('finalPromptText:', finalPromptText);
 

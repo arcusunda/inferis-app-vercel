@@ -32,6 +32,8 @@ const StoryIdeasList = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      console.info('Checking if holder of NFT contract:', address);
+      if(address === undefined) return;
       const response = await axios.get('/api/alchemy', {
         params: {
           wallet: address,
@@ -202,13 +204,13 @@ const StoryIdeasList = () => {
           </Link>
         </li>
         <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400">
-          <Link href="/muertos/storyideas/" className="text-white hover:text-gray-300">
-            Story Ideas
+          <Link href="/muertos/storyelements/create" className="text-white hover:text-gray-300">
+            Story Elements
           </Link>
         </li>
         <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400">
-          <Link href="/muertos/storyelements" className="text-white hover:text-gray-300">
-            Story Elements
+          <Link href="/muertos/storyideas/" className="text-white hover:text-gray-300">
+            Story Ideas
           </Link>
         </li>
         <li>
