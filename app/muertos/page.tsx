@@ -1,11 +1,15 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BannerImageUrl } from '../../utils/utils';
 import Link from 'next/link';
 import { useAccount } from 'wagmi'
 
 export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
+  const [bodyCount, setBodyCount] = useState<number | null>(null);
+  const [maskCount, setMaskCount] = useState<number | null>(null);
+  const [headwearCount, setHeadwearCount] = useState<number | null>(null);
+  const [expressionCount, setExpressionCount] = useState<number | null>(null);
   const account = useAccount();
 
   require('dotenv').config();
@@ -17,6 +21,26 @@ export default function Home() {
       className="w-full h-64 object-cover mx-auto sm:h-96 md:h-128 lg:h-160 xl:h-192"
     />
   );
+  
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const bodyCount = await getStoryElementCount('Muerto Body');
+        const maskCount = await getStoryElementCount('Muerto Mask');
+        const headwearCount = await getStoryElementCount('Muerto Headwear');
+        const expressionCount = await getStoryElementCount('Muerto Expression');
+        
+        setBodyCount(bodyCount);
+        setMaskCount(maskCount);
+        setHeadwearCount(headwearCount);
+        setExpressionCount(expressionCount);
+      } catch (error) {
+        console.error('Failed to fetch counts:', error);
+      }
+    };
+
+    fetchCounts();
+  }, []);
 
   const renderWelcomeContent = () => (
     <div className="text-center">
@@ -112,9 +136,68 @@ export default function Home() {
     </nav>
   );
 
+  async function getStoryElementCount(aspect: 'Muerto Body' | 'Muerto Mask' | 'Muerto Headwear' | 'Muerto Expression'): Promise<number> {
+    const validAspects = ['Muerto Body', 'Muerto Mask', 'Muerto Headwear', 'Muerto Expression'];
+  
+    if (!validAspects.includes(aspect)) {
+      throw new Error('Invalid aspect value');
+    }
+  
+    const encodedAspect = encodeURIComponent(aspect);
+    const response = await fetch(`/api/storyelements/catalog/${encodedAspect}`);
+  
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch story element count');
+    }
+  
+    const data = await response.json();
+    return data.count;
+  }
+  
+  const renderProgressTable = () => {
+  
+    const bodyTotal = 368;
+    const maskTotal = 148;
+    const headwearTotal = 32;
+    const expressionTotal = 25;
+  
+    const calculatePercentage = (current: number, total: number) => ((current / total) * 100).toFixed(1) + '%';
+  
+    if (bodyCount === null || maskCount === null || headwearCount === null || expressionCount === null) {
+      return <div>Loading...</div>;
+    }
+  
+    return (
+      <div className="overflow-x-auto mt-6 gap-6">
+        <div className="flex flex-col items-center">Los Muertos World Collection</div>
+        <div className="flex flex-col items-center">AI Catalog progress:</div>
+        <table className="min-w-full bg-gray-200 dark:bg-gray-800 text-center rounded-lg border border-gray-400 mb-4">
+          <thead>
+            <tr>
+              <th className="p-2 border border-gray-400">Mask</th>
+              <th className="p-2 border border-gray-400">Body</th>
+              <th className="p-2 border border-gray-400">Headwear</th>
+              <th className="p-2 border border-gray-400">Expression</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="p-2 border border-gray-400">{calculatePercentage(maskCount, maskTotal)}</td>
+              <td className="p-2 border border-gray-400">{calculatePercentage(bodyCount, bodyTotal)}</td>
+              <td className="p-2 border border-gray-400">{calculatePercentage(headwearCount, headwearTotal)}</td>
+              <td className="p-2 border border-gray-400">{calculatePercentage(expressionCount, expressionTotal)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+     
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-4 sm:p-6">
       {renderNavigation()}
+      {renderProgressTable()}
       {!isConnected ? (
         <div className="flex flex-col items-center">
           {renderWelcomeContent()}
