@@ -9,8 +9,18 @@ export async function POST(request: NextRequest) {
 
     try {
         const collection = await getCollection('storyElements');
-        const existingStoryElementsData = await collection.find({ }).toArray();
-
+        const existingStoryElementsData = await collection.find({
+            'attributes': {
+                $not: {
+                    $elemMatch: {
+                        'trait_type': 'Aspect',
+                        'value': { $in: ['Muerto Body', 'Muerto Mask', 'Muerto Headwear'] }
+                    }
+                }
+            },
+            'name': { $not: /^[0-9]+$/ }
+        }).toArray();
+        
         let values = {
             aspect: '[Aspect]',
             existingStoryElements: existingStoryElementsData.map(storyElement => {
