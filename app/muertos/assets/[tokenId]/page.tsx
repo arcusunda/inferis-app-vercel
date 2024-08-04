@@ -376,7 +376,7 @@ const NFTDetails = ({ params }: DetailPageProps) => {
                   onClick={handleSaveCharacter}
                   className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
                 >
-                  Save Character
+                  Save Tropes
                 </button>
               </div>
             <div className="text-sm text-gray-400 w-full lg:w-1/2">
@@ -393,7 +393,7 @@ const NFTDetails = ({ params }: DetailPageProps) => {
                   onClick={handleSaveCharacter}
                   className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
                 >
-                  Save Character
+                  Save Tropes
                 </button>
               </div>
             </div>
