@@ -309,11 +309,11 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
             <ul className="flex justify-center items-center space-x-4">
                 <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400 dark:after:bg-gray-600">
                     <Link href="/muertos/storyelements/create/" className="text-white hover:text-gray-300">
-                    Create a Story Element
+                    Story Elements
                     </Link>
                 </li>
                 <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400 dark:after:bg-gray-600">
-                    <Link href="/" className="text-white hover:text-gray-300">
+                    <Link href="/muertos" className="text-white hover:text-gray-300">
                         Home
                     </Link>
                 </li>
@@ -382,8 +382,8 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
           ) : (
             <div className="flex flex-wrap justify-center gap-6">
               <div className="flex flex-wrap justify-center gap-1 w-full">
-                <h2 className="text-l font-bold mb-4 text-center w-full">Each of your muertos grants you generation of one StoryElement</h2>
-                <h2 className="text-l font-bold mb-4 text-center w-full">Choose a Muerto:</h2>
+              <h1 className="text-xl font-bold mb-4 text-center w-full">Choose a Muerto</h1>
+              <h2 className="text-l font-bold mb-4 text-center w-full">Each muerto grants you generation of one Story Element</h2>
               </div>
               <div className="w-full"></div>
 

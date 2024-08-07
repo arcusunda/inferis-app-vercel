@@ -538,7 +538,7 @@ const StoryElementDetail = ({params}: StoryElementDetailProps) => {
         </li>
         <li>
           <Link href="/muertos/storyelements/create" className="text-white hover:text-gray-300">
-          Create a Story Element
+          Story Elements
           </Link>
         </li>
       </ul>
