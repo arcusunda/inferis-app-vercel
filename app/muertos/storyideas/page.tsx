@@ -32,7 +32,6 @@ const StoryIdeasList = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      console.info('Checking if holder of NFT contract:', address);
       if(address === undefined) return;
       const response = await axios.get('/api/alchemy', {
         params: {

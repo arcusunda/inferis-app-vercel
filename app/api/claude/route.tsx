@@ -61,8 +61,6 @@ export async function POST(request: NextRequest) {
             .replaceAll('[Muerto Expression]', values.muertoExpression)
             .replaceAll('[Muerto Headwear]', values.muertoHeadwear);
         
-        console.info('finalPromptText:', finalPromptText);
-
         const rootPrompts = await getCollection('rootPrompts');
         const knowledgeBase = await rootPrompts.findOne({ name: 'KnowledgeBase' })
 

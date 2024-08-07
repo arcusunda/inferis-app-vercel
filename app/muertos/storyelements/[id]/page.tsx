@@ -17,7 +17,6 @@ type StoryElementDetailProps = {
 };
 const StoryElementDetail = ({params}: StoryElementDetailProps) => {
   const { id } = params;
-  console.info('StoryElementDetail id:', id);
   const [storyElement, setStoryElement] = useState<StoryElement | null>(null);
   const [children, setChildren] = useState<StoryElement[]>([]);
   const [hovered, setHovered] = useState<string | null>(null);
@@ -30,7 +29,6 @@ const StoryElementDetail = ({params}: StoryElementDetailProps) => {
   useEffect(() => {
     if (id) {
       const idStr = Array.isArray(id) ? id[0] : id;
-      console.info('StoryElementDetail idStr:', idStr);
       fetch(`/api/storyelements/${idStr}`)
         .then(response => response.json())
         .then(data => {
@@ -129,8 +127,6 @@ const StoryElementDetail = ({params}: StoryElementDetailProps) => {
 
       try {
         if (!account || !storyElement) return;
-
-        console.info(`account: ${account} storyElement: ${storyElement}`);
 
         const config: StoryConfig = {
           account: account,

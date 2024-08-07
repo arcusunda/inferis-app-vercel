@@ -29,7 +29,6 @@ const HomePage = () => {
     try {
       const response = await fetch(`/api/alchemy/fetchmetadata?wallet=${address}`);
       const data = await response.json();
-      console.info('fetchedNFTs:', data);
       if (response.ok) {
         setNfts(data.nfts);
         return data.nfts;

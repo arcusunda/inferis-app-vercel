@@ -11,7 +11,6 @@ import { useAccount } from "wagmi"
 
 const fetchNFTDetails = async (tokenId: string): Promise<NFT | null> => {
   try {
-    console.info('tokenId:', tokenId);
     const response = await axios.get(`https://ipfs.io/ipfs/${BaseNFTMetadata}/${tokenId}.json`);
 
     if (response.data) {
@@ -29,7 +28,6 @@ const fetchNFTDetails = async (tokenId: string): Promise<NFT | null> => {
 
 const fetchProseByTokenId = async (tokenId: string): Promise<Prose | null> => {
     try {
-      console.info('tokenId:', tokenId);
       const response = await fetch(`/api/prose/${tokenId}`);
       if (response.ok) {
         const data = await response.json();
@@ -130,7 +128,6 @@ const ProseDetails = ({ params }: ProseDetailsPageProps) => {
         if (nftData) {
 
               
-          console.info(`tokenId: ${tokenId}`)
           const maskAttribute = nftData.attributes.find((attr) => attr.trait_type === 'Mask');
           const surname = maskAttribute ? maskAttribute.value : 'Unknown';
 
@@ -168,7 +165,6 @@ const ProseDetails = ({ params }: ProseDetailsPageProps) => {
       Object.entries(selectedTalents).map(([key, value]) => [key, Array.from(value)])
     );
 
-    console.info('serializedTalents:', serializedTalents);
     const aiResponse = await fetch(`/api/storyelements/associations/openai`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

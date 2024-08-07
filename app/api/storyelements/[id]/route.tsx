@@ -11,8 +11,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid ID format' }, { status: 400 });
   }
 
-  console.info('Story Element ID:', id);
-
   const idNumber = Number(id);
 
 

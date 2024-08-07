@@ -1,25 +1,25 @@
 'use client'
 
 import { useEffect, useState, ChangeEvent, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { useAccount } from "wagmi";
-import { StoryElement, NFT } from '../../../types';
-import { IpfsBaseUrl } from '../../../../utils/utils';
+import { StoryElement, NFT } from '../../../../types';
+import { IpfsBaseUrl } from '../../../../../utils/utils';
 import '@/app/globals.css';
+import { version } from 'os';
 
 type CreateStoryElementPageProps = {
     params: {
-      tokenId: string;
+      id: string;
     };
   };
   
 const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
-    const { tokenId } = params;
+    const tokenId = params.id;
     const { open } = useWeb3Modal();
     const { address } = useAccount();
-    const [nfts, setNfts] = useState([]);
     const [nft, setNft] = useState<NFT | null>(null);
     const [aspectFilter, setAspectFilter] = useState<string>('All');
     const [isLoading, setIsLoading] = useState(false);
@@ -38,63 +38,7 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
     const [isStoryElementLoaded, setIsStoryElementLoaded] = useState(false);
     const [isSaved, setSaved] = useState(false);
     const [isOwner, setIsOwner] = useState(false);
-    const [loading, setLoading] = useState(true);
-
-    const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        image: '',
-        wbpImage: '',
-        aspect: '',
-        isRoot: false,
-        attributes: [],
-        state: '',
-        ipId: '',
-        licenseTermsId: '',
-        derivativeRegistration: '',
-        isRegistered: false,
-        childrenData: [],
-        licenseTokenId: '',
-        dateCanonized: '',
-        dateRegistered: '',
-        isTokenized: false,
-        author: '',
-        isSubmitted: false,
-        created: '',
-        updated: ''
-    });
-
-    const router = useRouter();
-
-    useEffect(() => {
-        setLoading(true);
-        fetchNFTs(address as string);
-        const savedNfts = localStorage.getItem('nfts');
-    
-        if (savedNfts) {
-          setNfts(JSON.parse(savedNfts));
-          localStorage.setItem('nfts', JSON.stringify(nfts));
-        }
-        setLoading(false);
-      }, []);
-    
-        const fetchNFTs = async (address: string) => {
-        try {
-            const response = await fetch(`/api/alchemy/fetchmetadata?wallet=${address}`);
-            const data = await response.json();
-            if (response.ok) {
-            setNfts(data.nfts);
-            return data.nfts;
-            } else {
-            console.error('Error:', data.error);
-            return [];
-            }
-        } catch (error) {
-            console.error('Error fetching NFTs:', error);
-            return [];
-        }
-    };
-    
+  
     useEffect(() => {
         if (nft) {
             const fetchStoryElements = async () => {
@@ -118,19 +62,6 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
     }, [nft]);
 
     useEffect(() => {
-        const fetchNFTs = async () => {
-            if (!address) return;
-            try {
-              const response = await fetch(`/api/alchemy/fetchmetadata?wallet=${address}`);
-              if (response.ok) {
-                const data = await response.json();
-                setIsOwner(data.nfts.some((nft: { tokenId: string }) => nft.tokenId === tokenId));
-              }
-            } catch (error) {
-              console.error('Error fetching NFTs:', error);
-              setIsOwner(false);
-            }
-          };
 
           const fetchStoryElements = async () => {
             if (address) {
@@ -147,44 +78,16 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
         fetchStoryElements();
     }, [address]);
 
-    const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value, type } = e.target;
-        setFormData({
-            ...formData,
-            [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
-        });
-    };
-
     const handleAspectFilterChange = (e: ChangeEvent<HTMLSelectElement>) => {
         setAspectFilter(e.target.value);
     };
-
-    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-
-        const response = await fetch('/api/storyelements', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                ...formData,
-                created: new Date(),
-                updated: new Date(),
-            })
-        });
-
-        if (response.ok) {
-            router.push('/storyelements');
-        } else {
-            console.error('Failed to create story element:', response.statusText);
-        }
-    };
-
+/*
     useEffect(() => {
         if (isAiPromptCompleted) {
           handleSaveStoryElement();
         }
       }, [isAiPromptCompleted]);
-    
+*/    
       useEffect(() => {
         if (aiText) {
           const timerId = setTimeout(() => {
@@ -201,8 +104,8 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
         const aspect = parsedJson?.attributes?.find(attr => attr.trait_type === 'Aspect')?.value;
         const text = parsedJson?.attributes?.find(attr => attr.trait_type === 'Text')?.value;
         const parents = parsedJson?.attributes?.find(attr => attr.trait_type === 'Parents')?.value;
-        
-        try {
+
+      try {
         const response = await fetch('/api/storyelements', {
           method: 'POST',
           headers: {
@@ -217,7 +120,7 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
             parents,
             state: 'Draft',
             address,
-            tokenId: parseInt(tokenId),
+            tokenId: tokenId
           }}),
 
         });
@@ -225,8 +128,8 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
           if (response.ok) {
             setIsStoryElementLoaded(true);
             setSaved(true);
-            setShowSaveMessage(true); // Show the save message
-            setTimeout(() => setShowSaveMessage(false), 3000); // Hide the message after 3 seconds
+            setShowSaveMessage(true);
+            setTimeout(() => setShowSaveMessage(false), 3000);
           } else {
             console.error('Failed to save story idea');
           }
@@ -313,18 +216,18 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
                     </Link>
                 </li>
                 <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400 dark:after:bg-gray-600">
-                    <Link href="/" className="text-white hover:text-gray-300">
+                    <Link href="/muertos" className="text-white hover:text-gray-300">
                         Home
+                    </Link>
+                </li>
+                <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400 dark:after:bg-gray-600">
+                    <Link href="/muertos/storyelements/create" className="text-white hover:text-gray-300">
+                        Story Elements
                     </Link>
                 </li>
                 <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400 dark:after:bg-gray-600">
                     <Link href="/muertos/storyideas" className="text-white hover:text-gray-300">
                         Story Ideas
-                    </Link>
-                </li>
-                <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400 dark:after:bg-gray-600">
-                    <Link href="/muertos/storyelements" className="text-white hover:text-gray-300">
-                        Story Elements
                     </Link>
                 </li>
                 <li>
@@ -357,68 +260,137 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
     };
 
     return (
-        <main className="flex flex-col min-h-screen p-6">
-          {renderNavigation()}
-          {!address ? (
-            <div className="flex flex-wrap justify-center gap-6">
-              <p className="text-xl text-gray-500">Please connect your wallet</p>
-            </div>
-          ) : !nfts || nfts.length < 1 ? (
-            <>
-              <div className="flex flex-wrap justify-center gap-6">
-                <p className="text-xl text-gray-500">No Muertos found</p>
-              </div>
-              <div className="flex flex-wrap justify-center gap-6">
-                <p className="text-xl text-gray-500">Visit Los Muertos World</p>
-              </div>
-              <div className="flex flex-wrap justify-center gap-6">
-                <p className="text-xl text-gray-500"> at </p>
-              </div>
-              <div className="flex justify-center items-center space-x-4">
-                <Link href="https://opensea.io/collection/los-muertos-world" target="_blank">
-                  <img src="/opensea-logo.png" alt="Visit Los Muertos World at OpenSea" className="w-10 h-10" />
-                </Link>
-                <p className="text-xl text-gray-500"> or </p>
-                <Link href="https://magiceden.io/collections/ethereum/0xc878671ff88f1374d2186127573e4a63931370fc" target="_blank">
-                  <img src="/magiceden-logo.png" alt="Visit Los Muertos World at Magic Eden" className="w-10 h-10" />
-                </Link>
-              </div>
-            </>
-          ) : (
-            <div className="flex flex-wrap justify-center gap-6">
-              <div className="flex flex-wrap justify-center gap-1 w-full">
-                <h2 className="text-l font-bold mb-4 text-center w-full">Each Muerto grants you generation of one StoryElement</h2>
-                <h2 className="text-l font-bold mb-4 text-center w-full">Choose a Muerto</h2>
-              </div>
-              <div className="w-full"></div>
-
-              {nfts.map((nft: { tokenId: string; image: string; name: string; owner: string; stakedAt: string; attributes: { trait_type: string; value: string; }[] }, index) => (
-                nft && (
-                  <Link href={`/muertos/storyelements/create/${nft.tokenId}`} key={index} className="border border-gray-300 rounded-lg p-4 max-w-xs text-center">
-                    <img
-                      src={nft.image.replace('ipfs://', 'https://ipfs.io/ipfs/')}
-                      alt={`Token ID: ${nft.tokenId}`}
-                      className="w-40 h-auto rounded mb-4"
-                    />
-                    <div className="text-sm text-gray-400">
-                      <p><strong>Name:</strong> {nft.name}</p>
-                      <p><strong>Token ID:</strong> {nft.tokenId}</p>
-                      {nft.attributes && (
-                        <div>
-                          <p><strong>Mask:</strong> {nft.attributes.find(attr => attr.trait_type === 'Mask')?.value || 'N/A'}</p>
-                          <p><strong>Body:</strong> {nft.attributes.find(attr => attr.trait_type === 'Body')?.value || 'N/A'}</p>
-                          <p><strong>Expression:</strong> {nft.attributes.find(attr => attr.trait_type === 'Expression')?.value || 'N/A'}</p>
-                          <p><strong>Headwear:</strong> {nft.attributes.find(attr => attr.trait_type === 'Headwear')?.value || 'N/A'}</p>
-                        </div>
-                      )}
+        <main className="flex min-h-screen flex-col items-center justify-between p-6 bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+            {renderNavigation()}
+            {!address ? (
+                <div className="flex flex-wrap justify-center gap-6">
+                    <p className="text-xl text-gray-500">Please connect your wallet</p>
+                </div>
+            ) : (
+                <div className="mt-6 p-4 bg-gray-100 rounded shadow-md w-full max-w-lg dark:bg-gray-900 dark:text-gray-100">
+                    <p className="text-2xs mb-6 text-center">
+                        Create your own unique story element for the fictional series <em>Tali and the 10,000 Muertos</em>.
+                    </p>
+                    <p className="text-2xs mb-6 text-center">
+                        using TokenId: {tokenId}
+                    </p>
+                    <div className="flex justify-center mb-6">
+                        <label htmlFor="aspect-filter" className="mr-4 text-lg">
+                            Choose an Aspect:
+                        </label>
+                        <select
+                            id="aspect-filter"
+                            value={aspectFilter}
+                            onChange={handleAspectFilterChange}
+                            className="bg-gray-700 text-white rounded px-4 py-2 dark:bg-gray-800 dark:text-gray-200"
+                        >
+                            <option value="Magical Item">Magical Item</option>
+                            <option value="Magical Creature">Magical Creature</option>
+                            <option value="Magic System">Magic System</option>
+                            <option value="Character">Character</option>
+                            <option value="Secret Society">Secret Society</option>
+                            <option value="Cryptic Clue">Cryptic Clue</option>
+                            <option value="Setting">Setting</option>
+                            <option value="Character - Mortal Antagonist">Mortal Antagonist</option>
+                        </select>
                     </div>
-                  </Link>
-                )
-              ))}
+                    <button
+                        onClick={handleCreateStoryElement}
+                        className={`px-4 py-2 rounded ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 text-white dark:bg-blue-600 dark:text-gray-100'}`}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'Please wait...' : 'Create (Overwrite) Story Element'}
+                    </button>
+                    {parsedJson ? (
+                        <div className="mt-6 p-4 bg-gray-100 rounded shadow-md w-full max-w-lg dark:bg-gray-900 dark:text-gray-100">
+                            <h2 className="text-xl font-bold mb-2">Generated Story Element</h2>
+                            <p><strong>Name:</strong> {parsedJson.name}</p>
+                            <p><strong>Description:</strong> {parsedJson.description}</p>
+                            <p><strong>Associated Token ID:</strong> {tokenId}</p>
+                            {parsedJson.image && !isEditingImage ? (
+                                <div className="relative">
+                                    <img
+                                        src={imageUrl}
+                                        alt={parsedJson.name}
+                                        className="w-64 h-64 object-cover rounded mb-4 md:mb-0 md:mr-4"
+                                    />
+                                    <button
+                                        onClick={handleImageEdit}
+                                        className="absolute top-2 right-2 bg-gray-300 text-black px-2 py-1 rounded text-xs dark:bg-gray-700 dark:text-white"
+                                    >
+                                        Edit Image
+                                    </button>
+                                </div>
+                            ) : (
+                                <div>
+                                    <input
+                                        type="text"
+                                        value={imageUrl}
+                                        onChange={handleImageUrlChange}
+                                        onBlur={handleImageUrlBlur}
+                                        className="bg-gray-200 text-black rounded px-4 py-2 w-full dark:bg-gray-800 dark:text-gray-200"
+                                    />
+                                </div>
+                            )}
+                                    <p><strong>Aspect:</strong> {parsedJson.attributes?.find(attr => attr.trait_type === 'Aspect')?.value}</p>
+                                    <p><strong>Text:</strong> {parsedJson.attributes?.find(attr => attr.trait_type === 'Text')?.value}</p>
+                                    <p><strong>Parents:</strong> {parsedJson.attributes?.find(attr => attr.trait_type === 'Parents')?.value}</p>
+                                    {showSaveMessage && (
+                                        <div className="text-xs mt-4 text-center gap-6 text-green-500">
+                                            Story idea saved
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                jsonError && (
+                                    <div className="mt-6 p-4 bg-red-100 rounded shadow-md w-full max-w-lg dark:bg-red-900 dark:text-gray-100">
+                                        <h2 className="text-xl font-bold mb-2">Error Parsing JSON</h2>
+                                        <p>{jsonError}</p>
+                                        <pre className="mt-2 p-2 bg-gray-200 rounded dark:bg-gray-800 dark:text-gray-200">{aiText}</pre>
+                                    </div>
+                                )
+                            )}
+                        </div>
+            )}
+
+            {!address ? (
+            <div className="flex flex-wrap justify-center gap-6">
+            <p className="text-xl text-gray-500">Please connect your wallet</p>
             </div>
-          )}
+            ) : !storyElements || storyElements.length < 1 ? (
+                <div className="flex flex-wrap justify-center gap-6">
+                <p className="text-xl text-gray-500">No Story Elements found</p>
+                </div>
+            ) : (
+                <div className="w-full flex flex-col items-center gap-6 mt-8">
+                    <h2 className="text-2xl font-bold mb-4 text-center">Your existing Story Elements</h2>
+                    <div className="flex flex-wrap justify-center gap-6">
+                        {storyElements.map((element) => (
+                            <Link href={`/muertos/storyelements/${element.id}`} key={element.id} className="border border-gray-300 rounded-lg p-4 max-w-xs text-center">
+                                <img
+                                    src={element.image.replace('ipfs://', 'https://ipfs.io/ipfs/')}
+                                    alt={`ID: ${element.id}`}
+                                    className="w-40 h-auto rounded mb-4"
+                                />
+                                <div className="text-sm text-gray-400">
+                                    <p><strong>Name:</strong> {element.name}</p>
+                                    <p><strong>Description:</strong> {element.description}</p>
+                                    <p><strong>Associated Token ID:</strong> {element.tokenId ? element.tokenId : "N/A"}</p>
+                                    {element.attributes && (
+                                    <div className="text-left">
+                                        {element.attributes.map((attr, idx) => (
+                                        <p key={idx}><strong>{attr.trait_type}:</strong> {attr.value}</p>
+                                        ))}
+                                    </div>
+                                    )}
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
         </main>
-      );
-    };
+    );
+};
 
 export default CreateStoryElement;

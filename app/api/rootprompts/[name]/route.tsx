@@ -15,7 +15,6 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const promptName = searchParams.get('promptName');
 
-  console.info(`promptName: ${promptName}`)
   if (!promptName || typeof promptName !== 'string') {
     return NextResponse.json({ error: 'Invalid promptName format' }, { status: 400 });
   }

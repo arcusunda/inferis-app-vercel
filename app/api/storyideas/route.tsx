@@ -27,18 +27,27 @@ export async function POST(request: NextRequest) {
     storyIdea.tokenId = Number(storyIdea.tokenId); // Ensure tokenId is a number
 
     const collection = await getCollection('storyIdeas');
+    const historyCollection = await getCollection('storyIdeaHistory');
 
-    const existingStoryIdea = await collection.findOne(
-      { tokenId: storyIdea.tokenId }
-    );
+    const existingStoryIdea = await collection.findOne({ tokenId: storyIdea.tokenId });
 
     storyIdea.updated = new Date();
+
     if (existingStoryIdea) {
       storyIdea.created = existingStoryIdea.created;
-      const result = await collection.updateOne(
-        { tokenId: storyIdea.tokenId },
-        { $set: storyIdea }
-      );
+
+      // Find the maximum version from the history collection
+      const maxVersionDocument = await collection.find({ tokenId: storyIdea.tokenId }).sort({ version: -1 }).limit(1).toArray();
+      const newVersion = maxVersionDocument.length > 0 ? maxVersionDocument[0].version + 1 : 2; // Initialize to 2 if no documents found, as version 1 is the new one
+
+      // Insert current version of the story idea to history collection
+      const { _id, ...historyStoryIdea } = existingStoryIdea; // Remove the _id field
+      await historyCollection.insertOne(historyStoryIdea);
+
+      storyIdea.version = newVersion;
+
+      const result = await collection.updateOne({ tokenId: storyIdea.tokenId }, { $set: storyIdea });
+
       if (result && result.acknowledged) {
         return NextResponse.json({ info: 'StoryIdea updated successfully' }, { status: 200 });
       } else {
@@ -46,16 +55,16 @@ export async function POST(request: NextRequest) {
       }
     } else {
       storyIdea.created = new Date();
+      storyIdea.version = 1;
+
       const result = await collection.insertOne(storyIdea);
+
       if (result && result.acknowledged) {
         return NextResponse.json({ info: 'StoryIdea created successfully' }, { status: 200 });
       } else {
         return NextResponse.json({ result: `${result}` }, { status: 200 });
       }
-    
     }
-
-
   } catch (error) {
     console.error('Internal Server Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -63,4 +72,3 @@ export async function POST(request: NextRequest) {
     closeMongoDB();
   }
 }
-

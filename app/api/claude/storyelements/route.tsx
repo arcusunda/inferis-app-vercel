@@ -33,14 +33,10 @@ export async function POST(request: NextRequest) {
         const rootPrompts = await getCollection('rootPrompts');
         const createStoryElementPrompt = await rootPrompts.findOne({ name: 'CreateStoryElement' })
 
-        console.info('createStoryElementPrompt:', createStoryElementPrompt);
-
         const finalPromptText = createStoryElementPrompt
             ? createStoryElementPrompt.promptText.replaceAll('[Aspect]', aspect)
             .replaceAll('[Existing Story Elements]', values.existingStoryElements) : '';
         
-        console.info('finalPromptText:', finalPromptText);
-
         const knowledgeBase = await rootPrompts.findOne({ name: 'KnowledgeBaseSummarized' })
 
         const anthropic = new Anthropic({
@@ -59,9 +55,7 @@ export async function POST(request: NextRequest) {
         } else {
             aiText = 'No response from Antropic AI';
         }
-
-        console.info('aiText: ', aiText);
-                
+              
         return NextResponse.json({ aiText });
 
     } catch (error) {

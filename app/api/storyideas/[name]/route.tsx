@@ -17,9 +17,7 @@ export async function GET(request: NextRequest) {
   try {
     const collection = await getCollection('storyIdeas');
 
-    console.info('tokenIdNumber: ', tokenIdNumber);
     let storyIdea: StoryIdea | null = await collection.findOne<StoryIdea>({ tokenId: tokenIdNumber });
-    console.info('storyIdea: ', storyIdea);
     return NextResponse.json(storyIdea);
   } catch (error) {
     console.error('Internal Server Error:', error);

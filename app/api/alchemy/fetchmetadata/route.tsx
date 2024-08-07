@@ -70,8 +70,6 @@ export async function GET(request: NextRequest) {
 
     // ignoring staked boolean for now
 
-    console.info(`Fetching NFTs for wallet: ${wallet}`)
-
     if (!wallet) {
         return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
     }
@@ -100,11 +98,9 @@ export async function GET(request: NextRequest) {
           }
           tokenIdString = tokenId.toString();
 
-          console.info('Processing tokenId:', tokenIdString);
 
           try {
             const response = await axios.get(`https://ipfs.io/ipfs/${BaseNFTMetadata}/${tokenIdString}.json`);
-            console.info('Processed tokenId:', tokenIdString);
             return { tokenId: tokenIdString, ...response.data };
           } catch (error) {
             console.error('Error fetching metadata for tokenId:', tokenIdString, error);
@@ -115,8 +111,6 @@ export async function GET(request: NextRequest) {
         const stakedNftMetadata = await Promise.all(nfts.map(async (nft: [string, bigint, bigint] | bigint) => {
           let tokenIdString: string;
           tokenIdString = (nft as bigint).toString();
-
-          console.info('Processing tokenId:', tokenIdString);
 
           try {
             const response = await axios.get(`https://ipfs.io/ipfs/${BaseNFTMetadata}/${tokenIdString}.json`);

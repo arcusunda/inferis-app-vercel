@@ -10,29 +10,45 @@ export async function POST(request: NextRequest) {
 
     character.tokenId = parseInt(character.tokenId as unknown as string, 10);
 
-    console.info('Character tokenId:', character.tokenId);
 
     const collection = await getCollection('characters');
+    const historyCollection = await getCollection('characterHistory');
 
-    const existingCharacter = await collection.findOne(
-      { tokenId: character.tokenId }
-    );
+    const existingCharacter = await collection.findOne({ tokenId: character.tokenId });
 
     character.updated = new Date();
+
     if (existingCharacter) {
       character.created = existingCharacter.created;
-    }
 
-    const result = await collection.findOneAndUpdate(
-      { tokenId: character.tokenId },
-      { $set: character },
-      { upsert: true, returnDocument: 'after' }
-    );
+      // Find the maximum version from the history collection
+      const maxVersionDocument = await collection.find({ tokenId: character.tokenId }).sort({ version: -1 }).limit(1).toArray();
+      const newVersion = maxVersionDocument.length > 0 ? maxVersionDocument[0].version + 1 : 2; // Initialize to 2 if no documents found, as version 1 is the new one
 
-    if (result && result.ok) {
-      return NextResponse.json({ info: 'Character saved successfully' }, { status: 200 });
+      // Insert current version of the character to history collection
+      const { _id, ...historyCharacter } = existingCharacter; // Remove the _id field
+      await historyCollection.insertOne(historyCharacter);
+
+      character.version = newVersion;
+
+      const result = await collection.updateOne({ tokenId: character.tokenId }, { $set: character });
+
+      if (result && result.acknowledged) {
+        return NextResponse.json({ info: 'Character updated successfully' }, { status: 200 });
+      } else {
+        return NextResponse.json({ result: `${result}` }, { status: 200 });
+      }
     } else {
-      return NextResponse.json({ result: `${result}` }, { status: 200 });
+      character.created = new Date();
+      character.version = 1;
+
+      const result = await collection.insertOne(character);
+
+      if (result && result.acknowledged) {
+        return NextResponse.json({ info: 'Character created successfully' }, { status: 200 });
+      } else {
+        return NextResponse.json({ result: `${result}` }, { status: 200 });
+      }
     }
   } catch (error) {
     console.error('Internal Server Error:', error);

@@ -39,7 +39,6 @@ export async function GET(request: NextRequest) {
 
         const isHolderOfContract = axiosResponse.data.isHolderOfContract;
         console.info('isHolderOfContract:', isHolderOfContract);
-        console.info('wallet:', wallet);
 
         const nftsForOwner = await alchemy.nft.getNftsForOwner(wallet);
 

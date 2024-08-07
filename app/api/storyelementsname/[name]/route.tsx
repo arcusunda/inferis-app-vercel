@@ -6,14 +6,10 @@ export async function GET(request: NextRequest) {
   const { pathname } = new URL(request.url);
   const name = pathname.split('/').pop()?.replaceAll('%20', ' ');
 
-  console.info('Story Element Name:', name);
-
   if (!name || typeof name !== 'string') {
     console.error('Invalid Name format');
     return NextResponse.json({ error: 'Invalid Name format' }, { status: 400 });
   }
-
-  console.info('Story Element Name:', name);
 
   try {
     const collection = await getCollection('storyElements');

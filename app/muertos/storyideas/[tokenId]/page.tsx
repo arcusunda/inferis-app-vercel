@@ -17,7 +17,6 @@ import {
 
 const fetchNFTDetails = async (tokenId: string): Promise<NFT | null> => {
   try {
-    console.info('tokenId:', tokenId);
     const response = await axios.get(`https://ipfs.io/ipfs/${BaseNFTMetadata}/${tokenId}.json`);
     return response.data || null;
   } catch (error) {
@@ -28,7 +27,6 @@ const fetchNFTDetails = async (tokenId: string): Promise<NFT | null> => {
 
 const fetchStoryElements = async (attributes: { trait_type: string; value: string }[]): Promise<StoryElement[]> => {
   try {
-    console.info('attributes:', attributes);
     const storyElements = await Promise.all(
       attributes.map(async (attr) => {
         const response = await fetch(`/api/storyelements/associations/${encodeURI(attr.value)}`);
@@ -290,9 +288,6 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
             });
 
             const storyIdeaData = await fetchStoryIdeaByTokenId(tokenId);
-            if(storyIdeaData) {
-              console.info('storyIdeaData:', storyIdeaData.text);
-            }
 
             setSelectedTropes(tropeMap);
             setIsCharacterSaved(true);

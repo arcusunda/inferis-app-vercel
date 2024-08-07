@@ -147,7 +147,7 @@ const StoryElementsPage = () => {
       ) : (
         <div className="flex flex-wrap justify-center gap-6">
           {filteredElements.map((element) => (
-            <Link href={`/muertos/storyelements/${element.name}`} key={element.id} className="border border-gray-300 rounded-lg p-4 max-w-xs text-center">
+            <Link href={`/muertos/storyelements/${element.id}`} key={element.id} className="border border-gray-300 rounded-lg p-4 max-w-xs text-center">
               <img
                 src={element.image.replace('ipfs://', 'https://ipfs.io/ipfs/')}
                 alt={`ID: ${element.id}`}

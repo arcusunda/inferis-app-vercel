@@ -59,9 +59,7 @@ export async function POST(request: NextRequest) {
             .replace('[Muerto Mask]', values.muertoMask)
             .replace('[Muerto Body]', values.muertoBody)
             .replace('[Muerto Headwear]', values.muertoHeadwear);
-        
-        console.info('finalPromptText:', finalPromptText);
-        
+     
         const assistant = await openai.beta.assistants.retrieve(assistantId);
 
         const thread = await openai.beta.threads.create({

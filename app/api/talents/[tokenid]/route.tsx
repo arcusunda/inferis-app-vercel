@@ -24,7 +24,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ info: 'Muerto not found' }, { status: 200 });
     }
 
-    console.info('Muerto found:', muerto);
     const { attributes } = muerto;
 
     const traitTypes = ['Mask', 'Body', 'Headwear', 'Expression'];
@@ -65,7 +64,6 @@ export async function GET(request: NextRequest) {
         talents.push(...collectionTalents);
       }
     }
-console.info(`talents: ${talents}`)
     return NextResponse.json(talents);
   } catch (error) {
     console.error('Internal Server Error:', error);

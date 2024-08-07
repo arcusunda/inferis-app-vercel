@@ -13,8 +13,6 @@ export async function GET(request: NextRequest) {
 
   const tokenIdNumber = Number(tokenId);
 
-  console.info('Fetching tropes for tokenId:', tokenIdNumber);
-
   try {
 
     const characters = await getCollection('characters');

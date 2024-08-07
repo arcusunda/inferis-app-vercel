@@ -23,9 +23,12 @@ export interface StoryElement {
   dateRegistered?: Date;
   isTokenized?: boolean;
   author: string;
+  address: string;
   isSubmitted: boolean;
   created: Date;
   updated?: Date;
+  version: number;
+  tokenId: number;
 }
 
 export interface HolderStoryElement {
@@ -111,6 +114,7 @@ export interface Character {
   attributes: Attribute[];
   created: Date;
   updated?: Date;
+  version: number;
 }
 
 export type Quest = {
@@ -132,6 +136,7 @@ export type StoryIdea = {
   state: 'Draft';
   isProse: boolean;
   wallet: string;
+  version: number;
 };
 
 export type Chapter = {
