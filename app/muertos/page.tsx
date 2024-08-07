@@ -56,13 +56,10 @@ export default function Home() {
         (Coming soon)
       </p>
       <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-left text-sm sm:text-lg leading-5 sm:leading-7">
-        Holders of Los Muertos World, your muerto may be a key to unlocking a collaborative storytelling adventure in the world of <em>Tali and the 10,000 Muertos</em>, an upcoming paranormal mystery series with elements of urban fantasy and magical realism, following a young protagonist as she navigates between the mortal world and a twilight realm, uncovering supernatural secrets while grappling with her own identity and family history. Your muerto could play a crucial role in Talisa's quest to unravel the mystery of Inferis and the forces keeping souls bound there. By selecting story elements associated with your muerto's attributes, you'll guide AI in generating a story idea that fits seamlessly into Talisa's story. Your creation could become the foundation for an episode where Talisa encounters your muerto and journeys with them to the twilight realm of Inferis, working to understand the reasons for their ensnarement and the connection to her own family mystery. Each story idea contributes to the rich tapestry of our shared universe, blending elements of cultural exploration, supernatural mystery, and personal discovery. A story idea potentially becomes a full episode, each one enriching our collective lore and may influence the unfolding narrative of Talisa's quest.
+      Holders of Los Muertos World, your muerto could be key to unlocking a collaborative storytelling experience in the world of <em>Tali and the 10,000 Muertos</em>, an upcoming supernatural mystery series with elements of urban fantasy and magical realism, following a young protagonist as she navigates between the mortal world and a twilight realm, uncovering supernatural secrets while grappling with her own identity and family history. Your story element could play a part in Talisa's quest to unravel the mystery of Inferis and the forces keeping souls bound there. Story elements contribute to the rich tapestry of the universe of <em>Tali and the 10,000 Muertos</em>, each one enriching our collective lore, blending aspects of cultural exploration, supernatural mystery, and personal discovery. Your story element may influence the unfolding narrative of the series and could potentially become part of a full episode.
       </p>
       <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-left text-sm sm:text-lg leading-5 sm:leading-7">
-        Once your story idea is generated, you may vote for others. The most captivating tales become part of the story's lore, celebrated as key episodes in an epic saga. Ready to see how your muerto might fit into this tale of two worlds? Step into Inferis, where every mask holds a story, and every story could be a clue to the greater mystery Talisa seeks to solve. Your muerto's journey - and perhaps the key to unlocking the secrets of Inferis - awaits.
-      </p>
-      <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-left text-sm sm:text-lg leading-5 sm:leading-7">
-        Disclaimer: This implementation of StoryElement is still in Beta testing for the series <em>Tali and the 10,000 Muertos</em>. Please be patient as we work to improve the experience and expand the features available to you. We appreciate your feedback and suggestions as we continue to develop this exciting new way to engage with the community. Story elements are subject to change and any story ideas generated could potentially be reset. Feel free to save those you generate externally.
+        Disclaimer: This implementation of StoryElement is still in Beta testing for the series <em>Tali and the 10,000 Muertos</em>. Please be patient as we work to improve the experience and expand the features available to you. We appreciate your feedback and suggestions as we continue to develop this exciting new way to engage with the community. Story elements are subject to change and could potentially be reset.
       </p>
       <h2 className="text-lg font-bold mt-4 sm:text-xl sm:mt-8"         style={{ paddingTop: '10px' }}
       > Tali and the 10,000 Muertos</h2>
@@ -120,8 +117,8 @@ export default function Home() {
         </li>
         {account && account.isConnected ? (
           <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400 dark:after:bg-gray-600">
-            <Link href="/muertos/assets/" className="text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300">
-              Your Muertos
+            <Link href="/muertos/storyelements/create/" className="text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300">
+              Create a Story Element
             </Link>
           </li>
         ) : (

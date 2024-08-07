@@ -211,18 +211,13 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
         <nav className="bg-gray-800 p-4 dark:bg-gray-900">
             <ul className="flex justify-center items-center space-x-4">
                 <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400 dark:after:bg-gray-600">
-                    <Link href="/muertos/assets/" className="text-white hover:text-gray-300">
-                        Your Muertos
-                    </Link>
-                </li>
-                <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400 dark:after:bg-gray-600">
                     <Link href="/muertos" className="text-white hover:text-gray-300">
                         Home
                     </Link>
                 </li>
                 <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400 dark:after:bg-gray-600">
                     <Link href="/muertos/storyelements/create" className="text-white hover:text-gray-300">
-                        Story Elements
+                    Create a Story Element
                     </Link>
                 </li>
                 <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400 dark:after:bg-gray-600">
@@ -269,10 +264,7 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
             ) : (
                 <div className="mt-6 p-4 bg-gray-100 rounded shadow-md w-full max-w-lg dark:bg-gray-900 dark:text-gray-100">
                     <p className="text-2xs mb-6 text-center">
-                        Create your own unique story element for the fictional series <em>Tali and the 10,000 Muertos</em>.
-                    </p>
-                    <p className="text-2xs mb-6 text-center">
-                        using TokenId: {tokenId}
+                        Create your own unique story element for the fictional series <em>Tali and the 10,000 Muertos</em> using TokenId: {tokenId}
                     </p>
                     <div className="flex justify-center mb-6">
                         <label htmlFor="aspect-filter" className="mr-4 text-lg">

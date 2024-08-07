@@ -641,13 +641,8 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
     <nav className="bg-gray-800 p-4">
       <ul className="flex justify-center items-center space-x-4">
         <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400">
-          <Link href="/muertos/assets/" className="text-white hover:text-gray-300">
-            Your Muertos
-          </Link>
-        </li>
-        <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400">
           <Link href="/muertos/storyelements/create" className="text-white hover:text-gray-300">
-            Story Elements
+            Create a Story Element
           </Link>
         </li>
         <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400">
@@ -674,8 +669,8 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
         <div className="flex justify-center items-center h-full">
           <div>
             <p className="text-xl text-gray-500">Please choose from your list of Muertos.</p>
-            <Link href="/muertos/assets/" className="text-white hover:text-gray-300">
-              Your Muertos
+            <Link href="/muertos/storyelements/create/" className="text-white hover:text-gray-300">
+            Create a Story Element
             </Link>
           </div>
         </div>
