@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
             ? createStoryElementPrompt.promptText.replaceAll('[Aspect]', aspect)
             .replaceAll('[Existing Story Elements]', values.existingStoryElements)
             .replaceAll('[Parent Story Element]', parentStoryElement?.name + ' - ' + parentStoryElement?.attributes.find((attr: { trait_type: string }) => attr.trait_type === 'Text')?.value) : '';
-       
+      
         const knowledgeBase = await rootPrompts.findOne({ name: 'KnowledgeBaseSummarized' })
 
         if(!knowledgeBase) {

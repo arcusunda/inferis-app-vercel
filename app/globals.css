@@ -98,7 +98,7 @@ body {
 
 .card.selected {
   border-color: #0070f3;
-  background-color: #f0f8ff;
+  background-color: #65adec;
 }
 
 .card:hover {

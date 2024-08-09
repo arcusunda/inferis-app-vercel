@@ -55,9 +55,6 @@ export default function Home() {
       <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-left text-sm sm:text-lg leading-5 sm:leading-7">
       Holders of Los Muertos World, your muerto could be key to unlocking a collaborative storytelling experience in the world of <em>Tali and the 10,000 Muertos</em>, an upcoming supernatural mystery series with elements of urban fantasy and magical realism, following a young protagonist as she navigates between the mortal world and a twilight realm, uncovering supernatural secrets while grappling with her own identity and family history. Your story element could play a part in Talisa's quest to unravel the mystery of Inferis and the forces keeping souls bound there. Story elements contribute to the rich tapestry of the universe of <em>Tali and the 10,000 Muertos</em>, each one enriching our collective lore, blending aspects of cultural exploration, supernatural mystery, and personal discovery. Your story element may influence the unfolding narrative of the series and could potentially become part of a full episode.
       </p>
-      <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-left text-sm sm:text-lg leading-5 sm:leading-7">
-        Disclaimer: This implementation of StoryElement is still in Beta testing for the series <em>Tali and the 10,000 Muertos</em>. Please be patient as we work to improve the experience and expand the features available to you. We appreciate your feedback and suggestions as we continue to develop this exciting new way to engage with the community. Story elements are subject to change and could potentially be reset.
-      </p>
       <h2 className="text-lg font-bold mt-4 sm:text-xl sm:mt-8"         style={{ paddingTop: '10px' }}
       > Tali and the 10,000 Muertos</h2>
       <div className="flex justify-center space-x-2 mt-2">
@@ -101,11 +98,14 @@ export default function Home() {
       <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-left text-sm sm:text-lg leading-5 sm:leading-7">
       <em>Tali and the 10,000 Muertos</em> explores themes of cultural heritage, identity, and the fine line between life and death. Talisa's quest for understanding and justice not only brings peace to the restless spirits but also helps her come to terms with her own grief and the legacy of her family. The series blends the everyday challenges of teenage life with the extraordinary demands of navigating a world filled with the supernatural, promising a captivating journey of mystery, discovery, and emotional resonance.
       </p>
+      <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-left text-sm sm:text-lg leading-5 sm:leading-7">
+        Disclaimer: This implementation of StoryElement for the series <em>Tali and the 10,000 Muertos</em> is still in Beta testing. Please be patient as we work to improve the experience and expand the features available to you. We appreciate your feedback and suggestions as we continue to develop this exciting new way to engage with the community. Story elements are subject to change and could potentially be reset.
+      </p>
     </div>
   );
 
   const renderNavigation = () => (
-    <nav className="bg-gray-200 dark:bg-gray-800 p-2 sm:p-4">
+    <nav className="bg-gray-200 dark:bg-gray-800 p-2 sm:p-4 mt-4">
       <ul className="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4">
         <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400 dark:after:bg-gray-600">
           <Link href="/muertos" className="text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300">
@@ -129,7 +129,7 @@ export default function Home() {
       </ul>
     </nav>
   );
-
+  
   async function getStoryElementCount(aspect: 'Muerto Body' | 'Muerto Mask' | 'Muerto Headwear' | 'Muerto Expression'): Promise<number> {
     const validAspects = ['Muerto Body', 'Muerto Mask', 'Muerto Headwear', 'Muerto Expression'];
   

@@ -44,7 +44,7 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
     const { open } = useWeb3Modal();
     const { address } = useAccount();
     const [nft, setNft] = useState<NFT | null>(null);
-    const [aspectFilter, setAspectFilter] = useState<string>('All');
+    const [aspectFilter, setAspectFilter] = useState<string>('Magical Item');
     const [isLoading, setIsLoading] = useState(false);
     const [isAiPromptCompleted, setIsAiPromptCompleted] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
