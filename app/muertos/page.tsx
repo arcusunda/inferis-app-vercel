@@ -52,9 +52,6 @@ export default function Home() {
         style={{ paddingTop: '5px' }}
       />
       <h2 className="text-lg font-bold mt-4 sm:text-xl sm:mt-8">Holders of Los Muertos World</h2>
-      <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-center text-sm sm:text-lg leading-5 sm:leading-7">
-        (Coming soon)
-      </p>
       <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-left text-sm sm:text-lg leading-5 sm:leading-7">
       Holders of Los Muertos World, your muerto could be key to unlocking a collaborative storytelling experience in the world of <em>Tali and the 10,000 Muertos</em>, an upcoming supernatural mystery series with elements of urban fantasy and magical realism, following a young protagonist as she navigates between the mortal world and a twilight realm, uncovering supernatural secrets while grappling with her own identity and family history. Your story element could play a part in Talisa's quest to unravel the mystery of Inferis and the forces keeping souls bound there. Story elements contribute to the rich tapestry of the universe of <em>Tali and the 10,000 Muertos</em>, each one enriching our collective lore, blending aspects of cultural exploration, supernatural mystery, and personal discovery. Your story element may influence the unfolding narrative of the series and could potentially become part of a full episode.
       </p>

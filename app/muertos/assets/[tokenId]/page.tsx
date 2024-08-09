@@ -314,8 +314,8 @@ const NFTDetails = ({ params }: DetailPageProps) => {
 
     return (
       <div>
-            <h2 className="text-2xl font-bold mb-4 text-center">Select your Story Elements</h2>
-            <div className="tabs">
+        <h2 className="text-2xl font-bold mb-4 text-center">Select your Story Elements</h2>
+        <div className="tabs">
           {aspects.map(aspect => (
             <button
               key={aspect}

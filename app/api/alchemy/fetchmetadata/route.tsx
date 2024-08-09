@@ -114,7 +114,6 @@ export async function GET(request: NextRequest) {
 
           try {
             const response = await axios.get(`https://ipfs.io/ipfs/${BaseNFTMetadata}/${tokenIdString}.json`);
-            console.info('Processed tokenId:', tokenIdString);
             return { tokenId: tokenIdString, ...response.data };
           } catch (error) {
             console.error('Error fetching metadata for tokenId:', tokenIdString, error);

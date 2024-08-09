@@ -5,16 +5,22 @@ import Anthropic from '@anthropic-ai/sdk';
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
-    const { aspect, bodyData, maskData, headwearData } = await request.json();
+    const { aspect, bodyData, maskData, headwearData, selectedStoryElement } = await request.json();
 
     try {
         const collection = await getCollection('storyElements');
+
+        let parentStoryElement = null;
+        if (selectedStoryElement) {
+            parentStoryElement = await collection.findOne({ id: parseInt(selectedStoryElement) });
+        }
+
         const existingStoryElementsData = await collection.find({
             'attributes': {
                 $not: {
                     $elemMatch: {
                         'trait_type': 'Aspect',
-                        'value': { $in: ['Muerto Body', 'Muerto Mask', 'Muerto Headwear'] }
+                        'value': { $in: ['Muerto Body', 'Muerto Mask', 'Muerto Headwear', 'Muerto Expression'] }
                     }
                 }
             },
@@ -35,8 +41,9 @@ export async function POST(request: NextRequest) {
 
         const finalPromptText = createStoryElementPrompt
             ? createStoryElementPrompt.promptText.replaceAll('[Aspect]', aspect)
-            .replaceAll('[Existing Story Elements]', values.existingStoryElements) : '';
-        
+            .replaceAll('[Existing Story Elements]', values.existingStoryElements)
+            .replaceAll('[Parent Story Element]', parentStoryElement?.name + ' - ' + parentStoryElement?.attributes.find((attr: { trait_type: string }) => attr.trait_type === 'Text')?.value) : '';
+       
         const knowledgeBase = await rootPrompts.findOne({ name: 'KnowledgeBaseSummarized' })
 
         const anthropic = new Anthropic({

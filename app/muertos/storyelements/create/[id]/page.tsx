@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { useEffect, useState, ChangeEvent, FormEvent } from 'react';
+import { useEffect, useState, ChangeEvent, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useWeb3Modal } from "@web3modal/wagmi/react";
@@ -10,12 +10,34 @@ import { IpfsBaseUrl } from '../../../../../utils/utils';
 import '@/app/globals.css';
 import { version } from 'os';
 
+const aspects = [
+    "Magical Item",
+    "Magical Creature",
+    "Cryptic Clue",
+    "Secret Society",
+    "Character - Mortal Antagonist"
+];
+
+const fetchStoryElementsByAspect = async (aspect: string): Promise<StoryElement[]> => {
+    try {
+        const response = await fetch(`/api/storyelements?isRoot=false&aspect=${encodeURIComponent(aspect)}`);
+        if (response.ok) {
+            const data = await response.json();
+            return Array.isArray(data) ? data : [];
+        }
+        return [];
+    } catch (error) {
+        console.error('Error fetching story elements:', error);
+        return [];
+    }
+};
+
 type CreateStoryElementPageProps = {
     params: {
-      id: string;
+        id: string;
     };
-  };
-  
+};
+
 const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
     const tokenId = params.id;
     const { open } = useWeb3Modal();
@@ -26,7 +48,9 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
     const [isAiPromptCompleted, setIsAiPromptCompleted] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [aiText, setAiText] = useState<string>('');
-    const [storyElements, setStoryElements] = useState<StoryElement[]>([]);
+    const [existingStoryElements, setExistingStoryElements] = useState<StoryElement[]>([]);
+    const [storyElements, setStoryElements] = useState<{ [aspect: string]: StoryElement[] }>({});
+    const [selectedStoryElement, setSelectedStoryElement] = useState<number | null>(null);
     const [maskStoryElement, setMaskStoryElement] = useState<StoryElement | null>(null);
     const [bodyStoryElement, setBodyStoryElement] = useState<StoryElement | null>(null);
     const [headwearStoryElement, setHeadwearStoryElement] = useState<StoryElement | null>(null);
@@ -38,7 +62,12 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
     const [isStoryElementLoaded, setIsStoryElementLoaded] = useState(false);
     const [isSaved, setSaved] = useState(false);
     const [isOwner, setIsOwner] = useState(false);
-  
+    const [showParentElements, setShowParentElements] = useState(false);
+
+    const initialAspect = aspects.length > 0 ? aspects[0] : '';
+
+    const [activeAspect, setActiveAspect] = useState<Aspect>(initialAspect);
+
     useEffect(() => {
         if (nft) {
             const fetchStoryElements = async () => {
@@ -62,13 +91,12 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
     }, [nft]);
 
     useEffect(() => {
-
-          const fetchStoryElements = async () => {
+        const fetchStoryElements = async () => {
             if (address) {
                 const response = await fetch(`/api/storyelements?address=${address}`);
                 if (response.ok) {
                     const data = await response.json();
-                    setStoryElements(data);
+                    setExistingStoryElements(data);
                 } else {
                     console.error('Failed to fetch story elements:', response.statusText);
                 }
@@ -76,28 +104,37 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
         };
 
         fetchStoryElements();
+
+        const fetchElementsByAspects = async () => {
+            try {
+                const elements = await Promise.all(aspects.map(aspect => fetchStoryElementsByAspect(aspect)));
+                const elementsMap: { [aspect: string]: StoryElement[] } = aspects.reduce((acc, aspect, index) => {
+                    acc[aspect] = elements[index];
+                    return acc;
+                }, {} as { [aspect: string]: StoryElement[] });
+                setStoryElements(elementsMap);
+            } catch (error) {
+                console.error('Error fetching story elements:', error);
+            }
+        };
+
+        fetchElementsByAspects();
     }, [address]);
 
     const handleAspectFilterChange = (e: ChangeEvent<HTMLSelectElement>) => {
         setAspectFilter(e.target.value);
     };
-/*
+
     useEffect(() => {
-        if (isAiPromptCompleted) {
-          handleSaveStoryElement();
-        }
-      }, [isAiPromptCompleted]);
-*/    
-      useEffect(() => {
         if (aiText) {
-          const timerId = setTimeout(() => {
-            handleSaveStoryElement();
-          }, 500); // Adjust the debounce time as necessary
-    
-          return () => clearTimeout(timerId);
+            const timerId = setTimeout(() => {
+                handleSaveStoryElement();
+            }, 500); // Adjust the debounce time as necessary
+
+            return () => clearTimeout(timerId);
         }
-      }, [aiText]);
-    
+    }, [aiText]);
+
     const handleSaveStoryElement = async () => {
         setIsSaving(true);
 
@@ -105,46 +142,47 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
         const text = parsedJson?.attributes?.find(attr => attr.trait_type === 'Text')?.value;
         const parents = parsedJson?.attributes?.find(attr => attr.trait_type === 'Parents')?.value;
 
-      try {
-        const response = await fetch('/api/storyelements', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ newStoryElement: {
-            name: parsedJson?.name,
-            description: parsedJson?.description,
-            image: parsedJson?.image,
-            aspect: aspect,
-            text: text,
-            parents,
-            state: 'Draft',
-            address,
-            tokenId: tokenId
-          }}),
+        try {
+            const response = await fetch('/api/storyelements', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    newStoryElement: {
+                        name: parsedJson?.name,
+                        description: parsedJson?.description,
+                        image: parsedJson?.image,
+                        aspect: aspect,
+                        text: text,
+                        parents,
+                        state: 'Draft',
+                        address,
+                        tokenId: tokenId
+                    }
+                }),
+            });
 
-        });
-    
-          if (response.ok) {
-            setIsStoryElementLoaded(true);
-            setSaved(true);
-            setShowSaveMessage(true);
-            setTimeout(() => setShowSaveMessage(false), 3000);
-          } else {
-            console.error('Failed to save story idea');
-          }
+            if (response.ok) {
+                setIsStoryElementLoaded(true);
+                setSaved(true);
+                setShowSaveMessage(true);
+                setTimeout(() => setShowSaveMessage(false), 3000);
+            } else {
+                console.error('Failed to save story idea');
+            }
         } catch (error) {
-          console.error('Error saving story idea:', (error as any).message);
+            console.error('Error saving story idea:', (error as any).message);
         } finally {
-          setIsSaving(false);
+            setIsSaving(false);
         }
-      };
-    
+    };
+
     const handleCreateStoryElement = async () => {
         setIsLoading(true);
         setIsAiPromptCompleted(false);
 
-        const elementIds = storyElements.map((el) => el.id).join(',');
+        const elementIds = existingStoryElements.map((el) => el.id).join(',');
 
         const bodyData = bodyStoryElement?.attributes?.find((attr) => attr.trait_type === 'Text')?.value || '';
         const maskData = maskStoryElement?.attributes?.find((attr) => attr.trait_type === 'Text')?.value || '';
@@ -164,6 +202,7 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
                 bodyData,
                 maskData,
                 headwearData,
+                selectedStoryElement
             };
 
             const aiResponse = await fetch('/api/claude/storyelements', {
@@ -207,6 +246,65 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
         return ipfsUrl;
     };
 
+    const handleStoryElementSelect = useCallback((aspect: string, elementId: number) => {
+        setSelectedStoryElement(prev => prev === elementId ? null : elementId);
+    }, []);
+
+    const memoizedStoryElements = useMemo(() => storyElements, [storyElements]);
+    const memoizedSelectedStoryElement = useMemo(() => selectedStoryElement, [selectedStoryElement]);
+
+    type Aspect = string;
+
+    interface StoryElementsSectionProps {
+        aspects: Aspect[];
+        storyElements: { [aspect: string]: StoryElement[] };
+        selectedStoryElement: number | null;
+        handleStoryElementSelect: (aspect: Aspect, elementId: number) => void;
+    }
+
+    const StoryElementsSection: React.FC<StoryElementsSectionProps> = ({
+        aspects,
+        storyElements,
+        selectedStoryElement,
+        handleStoryElementSelect,
+    }) => {
+
+        useEffect(() => {
+            if (!aspects.includes(activeAspect)) {
+                setActiveAspect(aspects[0]);
+            }
+        }, [aspects]);
+
+        return (
+            <div className="mt-6 p-4 bg-gray-100 rounded shadow-md w-full max-w-lg dark:bg-gray-900 dark:text-gray-100 gap-4">
+                <h2 className="text-2xl font-bold mb-4 text-center">Select a parent Story Element (optional)</h2>
+                <div className="tabs flex space-x-2">
+                    {aspects.map(aspect => (
+                        <button
+                            key={aspect}
+                            onClick={() => setActiveAspect(aspect)}
+                            className={`tab ${activeAspect === aspect ? 'active' : ''} flex-grow`}
+                        >
+                            {aspect}
+                        </button>
+                    ))}
+                </div>
+                <div className="story-elements-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                    {storyElements[activeAspect]?.map((element) => (
+                        <div
+                            key={element.id}
+                            className={`card ${selectedStoryElement === element.id ? 'selected' : ''} p-4 border rounded-lg flex flex-col`}
+                            onClick={() => handleStoryElementSelect(activeAspect, element.id)}
+                        >
+                            <h3 className="font-bold mb-2">{element.name}</h3>
+                            <p>{element.attributes?.find(attr => attr.trait_type === 'Text')?.value || 'No description available'}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    };
+
     const renderNavigation = () => (
         <nav className="bg-gray-800 p-4 dark:bg-gray-900">
             <ul className="flex justify-center items-center space-x-4">
@@ -217,7 +315,7 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
                 </li>
                 <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400 dark:after:bg-gray-600">
                     <Link href="/muertos/storyelements/create" className="text-white hover:text-gray-300">
-                    Story Elements
+                        Story Elements
                     </Link>
                 </li>
                 <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400 dark:after:bg-gray-600">
@@ -252,6 +350,13 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
         img.onerror = () => {
             console.error('Invalid image URL');
         };
+    };
+
+    const toggleShowParentElements = () => {
+        if (showParentElements) {
+            setSelectedStoryElement(null);
+        }
+        setShowParentElements(prev => !prev);
     };
 
     return (
@@ -324,40 +429,56 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
                                     />
                                 </div>
                             )}
-                                    <p><strong>Aspect:</strong> {parsedJson.attributes?.find(attr => attr.trait_type === 'Aspect')?.value}</p>
-                                    <p><strong>Text:</strong> {parsedJson.attributes?.find(attr => attr.trait_type === 'Text')?.value}</p>
-                                    <p><strong>Parents:</strong> {parsedJson.attributes?.find(attr => attr.trait_type === 'Parents')?.value}</p>
-                                    {showSaveMessage && (
-                                        <div className="text-xs mt-4 text-center gap-6 text-green-500">
-                                            Story idea saved
-                                        </div>
-                                    )}
+                            <p><strong>Aspect:</strong> {parsedJson.attributes?.find(attr => attr.trait_type === 'Aspect')?.value}</p>
+                            <p><strong>Text:</strong> {parsedJson.attributes?.find(attr => attr.trait_type === 'Text')?.value}</p>
+                            <p><strong>Parents:</strong> {parsedJson.attributes?.find(attr => attr.trait_type === 'Parents')?.value}</p>
+                            {showSaveMessage && (
+                                <div className="text-xs mt-4 text-center gap-6 text-green-500">
+                                    Story idea saved
                                 </div>
-                            ) : (
-                                jsonError && (
-                                    <div className="mt-6 p-4 bg-red-100 rounded shadow-md w-full max-w-lg dark:bg-red-900 dark:text-gray-100">
-                                        <h2 className="text-xl font-bold mb-2">Error Parsing JSON</h2>
-                                        <p>{jsonError}</p>
-                                        <pre className="mt-2 p-2 bg-gray-200 rounded dark:bg-gray-800 dark:text-gray-200">{aiText}</pre>
-                                    </div>
-                                )
                             )}
                         </div>
+                    ) : (
+                        jsonError && (
+                            <div className="mt-6 p-4 bg-red-100 rounded shadow-md w-full max-w-lg dark:bg-red-900 dark:text-gray-100">
+                                <h2 className="text-xl font-bold mb-2">Error Parsing JSON</h2>
+                                <p>{jsonError}</p>
+                                <pre className="mt-2 p-2 bg-gray-200 rounded dark:bg-gray-800 dark:text-gray-200">{aiText}</pre>
+                            </div>
+                        )
+                    )}
+                    <div className="mt-6">
+                        <button
+                            onClick={toggleShowParentElements}
+                            className="px-4 py-2 rounded bg-green-500 text-white dark:bg-green-600 dark:text-gray-100"
+                        >
+                            {showParentElements ? 'Hide Parent Story Elements' : 'Show Parent Story Elements'}
+                        </button>
+                        {showParentElements && (
+                            <StoryElementsSection
+                                aspects={aspects}
+                                storyElements={memoizedStoryElements}
+                                selectedStoryElement={memoizedSelectedStoryElement}
+                                handleStoryElementSelect={handleStoryElementSelect}
+                            />
+                        )}
+                    </div>
+                </div>
             )}
 
             {!address ? (
-            <div className="flex flex-wrap justify-center gap-6">
-            <p className="text-xl text-gray-500">Please connect your wallet</p>
-            </div>
-            ) : !storyElements || storyElements.length < 1 ? (
                 <div className="flex flex-wrap justify-center gap-6">
-                <p className="text-xl text-gray-500">No Story Elements found</p>
+                    <p className="text-xl text-gray-500">Please connect your wallet</p>
+                </div>
+            ) : !existingStoryElements || existingStoryElements.length < 1 ? (
+                <div className="flex flex-wrap justify-center gap-6">
+                    <p className="text-xl text-gray-500">No Story Elements found</p>
                 </div>
             ) : (
                 <div className="w-full flex flex-col items-center gap-6 mt-8">
                     <h2 className="text-2xl font-bold mb-4 text-center">Your existing Story Elements</h2>
                     <div className="flex flex-wrap justify-center gap-6">
-                        {storyElements.map((element) => (
+                        {existingStoryElements.map((element) => (
                             <Link href={`/muertos/storyelements/${element.id}`} key={element.id} className="border border-gray-300 rounded-lg p-4 max-w-xs text-center">
                                 <img
                                     src={element.image.replace('ipfs://', 'https://ipfs.io/ipfs/')}
@@ -369,11 +490,11 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
                                     <p><strong>Description:</strong> {element.description}</p>
                                     <p><strong>Associated Token ID:</strong> {element.tokenId ? element.tokenId : "N/A"}</p>
                                     {element.attributes && (
-                                    <div className="text-left">
-                                        {element.attributes.map((attr, idx) => (
-                                        <p key={idx}><strong>{attr.trait_type}:</strong> {attr.value}</p>
-                                        ))}
-                                    </div>
+                                        <div className="text-left">
+                                            {element.attributes.map((attr, idx) => (
+                                                <p key={idx}><strong>{attr.trait_type}:</strong> {attr.value}</p>
+                                            ))}
+                                        </div>
                                     )}
                                 </div>
                             </Link>
