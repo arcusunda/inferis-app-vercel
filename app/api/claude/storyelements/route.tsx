@@ -46,6 +46,10 @@ export async function POST(request: NextRequest) {
        
         const knowledgeBase = await rootPrompts.findOne({ name: 'KnowledgeBaseSummarized' })
 
+        if(!knowledgeBase) {
+            return NextResponse.json({ error: 'KnowledgeBaseSummarized prompt not found' }, { status: 500 });
+        }
+
         const anthropic = new Anthropic({
             apiKey: process.env.ANTHROPIC_API_KEY
         });
@@ -53,7 +57,7 @@ export async function POST(request: NextRequest) {
         const msg = await anthropic.messages.create({
             model: "claude-3-5-sonnet-20240620",
             max_tokens: 4096,
-            messages: [{ role: "user", content: knowledgeBase + finalPromptText }],
+            messages: [{ role: "user", content: knowledgeBase?.promptText + finalPromptText }],
         });
 
         let aiText = '';

@@ -15,6 +15,7 @@ const aspects = [
     "Magical Creature",
     "Cryptic Clue",
     "Secret Society",
+    "Setting",
     "Character - Mortal Antagonist"
 ];
 
@@ -276,20 +277,20 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
         }, [aspects]);
 
         return (
-            <div className="mt-6 p-4 bg-gray-100 rounded shadow-md w-full max-w-lg dark:bg-gray-900 dark:text-gray-100 gap-4">
+            <div className="mt-6 p-4 bg-gray-100 rounded shadow-md w-full dark:bg-gray-900 dark:text-gray-100 gap-4">
                 <h2 className="text-2xl font-bold mb-4 text-center">Select a parent Story Element (optional)</h2>
-                <div className="tabs flex space-x-2">
+                <div className="tabs flex flex-wrap gap-2">
                     {aspects.map(aspect => (
                         <button
                             key={aspect}
                             onClick={() => setActiveAspect(aspect)}
-                            className={`tab ${activeAspect === aspect ? 'active' : ''} flex-grow`}
+                            className={`tab ${activeAspect === aspect ? 'active' : ''} flex-grow p-2`}
                         >
                             {aspect}
                         </button>
                     ))}
                 </div>
-                <div className="story-elements-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                <div className="story-elements-grid grid gap-4 mt-4">
                     {storyElements[activeAspect]?.map((element) => (
                         <div
                             key={element.id}
@@ -360,15 +361,15 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
     };
 
     return (
-        <main className="flex min-h-screen flex-col items-center justify-between p-6 bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+        <main className="flex flex-col min-h-screen items-center justify-between p-6 bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100 w-full">
             {renderNavigation()}
             {!address ? (
-                <div className="flex flex-wrap justify-center gap-6">
+                <div className="flex flex-wrap justify-center gap-6 w-full">
                     <p className="text-xl text-gray-500">Please connect your wallet</p>
                 </div>
             ) : (
-                <div className="mt-6 p-4 bg-gray-100 rounded shadow-md w-full max-w-lg dark:bg-gray-900 dark:text-gray-100">
-                    <p className="text-2xs mb-6 text-center">
+                <div className="mt-6 p-4 bg-gray-100 rounded shadow-md w-full max-w-4xl dark:bg-gray-900 dark:text-gray-100">
+                    <p className="text-s mb-6 text-center">
                         Create your own unique story element for the fictional series <em>Tali and the 10,000 Muertos</em> using TokenId: {tokenId}
                     </p>
                     <div className="flex justify-center mb-6">
@@ -399,7 +400,7 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
                         {isLoading ? 'Please wait...' : 'Create (Overwrite) Story Element'}
                     </button>
                     {parsedJson ? (
-                        <div className="mt-6 p-4 bg-gray-100 rounded shadow-md w-full max-w-lg dark:bg-gray-900 dark:text-gray-100">
+                        <div className="mt-6 p-4 bg-gray-100 rounded shadow-md w-full dark:bg-gray-900 dark:text-gray-100">
                             <h2 className="text-xl font-bold mb-2">Generated Story Element</h2>
                             <p><strong>Name:</strong> {parsedJson.name}</p>
                             <p><strong>Description:</strong> {parsedJson.description}</p>
@@ -440,7 +441,7 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
                         </div>
                     ) : (
                         jsonError && (
-                            <div className="mt-6 p-4 bg-red-100 rounded shadow-md w-full max-w-lg dark:bg-red-900 dark:text-gray-100">
+                            <div className="mt-6 p-4 bg-red-100 rounded shadow-md w-full dark:bg-red-900 dark:text-gray-100">
                                 <h2 className="text-xl font-bold mb-2">Error Parsing JSON</h2>
                                 <p>{jsonError}</p>
                                 <pre className="mt-2 p-2 bg-gray-200 rounded dark:bg-gray-800 dark:text-gray-200">{aiText}</pre>
@@ -465,13 +466,13 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
                     </div>
                 </div>
             )}
-
+    
             {!address ? (
-                <div className="flex flex-wrap justify-center gap-6">
+                <div className="flex flex-wrap justify-center gap-6 w-full">
                     <p className="text-xl text-gray-500">Please connect your wallet</p>
                 </div>
             ) : !existingStoryElements || existingStoryElements.length < 1 ? (
-                <div className="flex flex-wrap justify-center gap-6">
+                <div className="flex flex-wrap justify-center gap-6 w-full">
                     <p className="text-xl text-gray-500">No Story Elements found</p>
                 </div>
             ) : (

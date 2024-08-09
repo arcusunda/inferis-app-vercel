@@ -21,7 +21,7 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
     const { address } = useAccount();
     const [nfts, setNfts] = useState([]);
     const [nft, setNft] = useState<NFT | null>(null);
-    const [aspectFilter, setAspectFilter] = useState<string>('All');
+    const [aspectFilter, setAspectFilter] = useState<string>('Magical Item');
     const [isLoading, setIsLoading] = useState(false);
     const [isAiPromptCompleted, setIsAiPromptCompleted] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -308,13 +308,13 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
         <nav className="bg-gray-800 p-4 dark:bg-gray-900">
             <ul className="flex justify-center items-center space-x-4">
                 <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400 dark:after:bg-gray-600">
-                    <Link href="/muertos/storyelements/create/" className="text-white hover:text-gray-300">
-                    Story Elements
+                    <Link href="/muertos" className="text-white hover:text-gray-300">
+                        Home
                     </Link>
                 </li>
                 <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400 dark:after:bg-gray-600">
-                    <Link href="/muertos" className="text-white hover:text-gray-300">
-                        Home
+                    <Link href="/muertos/storyelements/create/" className="text-white hover:text-gray-300">
+                    Story Elements
                     </Link>
                 </li>
                 <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400 dark:after:bg-gray-600">

@@ -70,7 +70,7 @@ body {
 }
 
 .tab {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0.5rem;
   cursor: pointer;
   border: none;
   background: none;
@@ -85,11 +85,11 @@ body {
 .story-elements-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .card {
-  padding: 1rem;
+  padding: 0.5rem;
   border: 1px solid #ddd;
   border-radius: 8px;
   cursor: pointer;
