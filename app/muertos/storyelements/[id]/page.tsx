@@ -530,21 +530,21 @@ const StoryElementDetail = ({params}: StoryElementDetailProps) => {
   
   const renderNavigation = () => (
     <nav className="bg-gray-800 p-4">
-      <ul className="flex justify-center items-center space-x-4">
-        <li className="relative pr-4 after:content-[''] after:block after:absolute after:top-0 after:right-0 after:h-full after:w-px after:bg-gray-400">
+      <ul className="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4">
+        <li className="relative sm:pr-4 sm:after:content-[''] sm:after:block sm:after:absolute sm:after:top-0 sm:after:right-0 sm:after:h-full sm:after:w-px sm:after:bg-gray-400">
           <Link href="/muertos" className="text-white hover:text-gray-300">
             Home
           </Link>
         </li>
         <li>
           <Link href="/muertos/storyelements/create" className="text-white hover:text-gray-300">
-          Story Elements
+            Story Elements
           </Link>
         </li>
       </ul>
     </nav>
   );
-
+  
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-6 bg-gray-900 text-white">
       {renderNavigation()}
