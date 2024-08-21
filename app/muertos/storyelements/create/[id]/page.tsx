@@ -394,8 +394,8 @@ const CreateStoryElement = ({ params }: CreateStoryElementPageProps) => {
                     </div>
                     <button
                         onClick={handleCreateStoryElement}
-                        className={`px-4 py-2 rounded ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 text-white dark:bg-blue-600 dark:text-gray-100'}`}
-                        disabled={isLoading}
+                        className={`px-4 py-2 rounded ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 text-white dark:bg-blue-600 dark:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed'}`}
+                        disabled={true}
                     >
                         {isLoading ? 'Please wait...' : 'Create (Overwrite) Story Element'}
                     </button>

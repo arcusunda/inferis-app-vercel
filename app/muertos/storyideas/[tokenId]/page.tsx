@@ -776,7 +776,7 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
                           value={comments[element.name] || ''}
                           onChange={(e) => handleCommentChange(element.name, e.target.value)}
                           className="w-full p-2 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                          disabled={voteStatus[element.name]}
+                          disabled={true}
                         />
                       </td>
                     </tr>
@@ -788,8 +788,8 @@ const StoryIdeaDetails = ({ params }: { params: { tokenId: string } }) => {
             <div className="flex justify-center mt-4">
               <button
                 onClick={handleCreateStoryIdea}
-                className={`px-4 py-2 rounded ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 text-white'}`}
-                disabled={isLoading}
+                className={`px-4 py-2 rounded ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 text-white disabled:opacity-50 disabled:cursor-not-allowed'}`}
+                disabled={true}
               >
                 {isLoading ? 'Please wait...' : 'Create New Story Idea'}
               </button>
