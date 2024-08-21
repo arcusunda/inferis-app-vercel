@@ -44,7 +44,20 @@ export default function Home() {
 
   const renderWelcomeContent = () => (
     <div className="text-center">
-    <div className="flex justify-center space-x-2 mt-2">
+      {renderBanner()}
+      <img
+        src="los-muertos.png"
+        alt="Los Muertos World holders"
+        className="w-16 h-16 object-cover mx-auto sm:w-24 sm:h-24"
+        style={{ paddingTop: '5px' }}
+      />
+      <h2 className="text-lg font-bold mt-4 sm:text-xl sm:mt-8">Holders of Los Muertos World</h2>
+      <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-left text-sm sm:text-lg leading-5 sm:leading-7">
+      Holders of Los Muertos World, your muerto could be key to unlocking a collaborative storytelling experience in the world of <em>Tali and the 10,000 Muertos</em>, an upcoming supernatural mystery series with elements of urban fantasy and magical realism, following a young protagonist as she navigates between the mortal world and a twilight realm, uncovering supernatural secrets while grappling with her own identity and family history. Your story element could play a part in Talisa's quest to unravel the mystery of Inferis and the forces keeping souls bound there. Story elements contribute to the rich tapestry of the universe of <em>Tali and the 10,000 Muertos</em>, each one enriching our collective lore, blending aspects of cultural exploration, supernatural mystery, and personal discovery. Your story element may influence the unfolding narrative of the series and could potentially become part of a full episode.
+      </p>
+      <h2 className="text-lg font-bold mt-4 sm:text-xl sm:mt-8"         style={{ paddingTop: '10px' }}
+      > Tali and the 10,000 Muertos</h2>
+      <div className="flex justify-center space-x-2 mt-2">
     <div className="flex flex-col items-center">
       <img
         src="connor-sullivan.png"
@@ -73,11 +86,20 @@ export default function Home() {
       <span className="mt-2 text-center text-xs sm:text-sm">Simon</span>
     </div>
   </div>
+      <img
+        src="muertos-season-one-1600.png"
+        alt="Talisa"
+        className="w-1600 h-160 object-cover mx-auto sm:w-1600 sm:h-160"
+        style={{ paddingTop: '5px' }}
+      />
       <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-left text-sm sm:text-lg leading-5 sm:leading-7">
-      In the coastal town of Eldridge Hollow, where the supernatural and mundane coexist uneasily, Talisa Esperanza is born (on The Day of the Dead) into a family with a rich Mexican-American heritage and a lineage of psychic abilities. Talisa's gifts awaken fully on her seventeen birthday, the day she discovers that she can see and communicate with spirits—muertos—trapped between worlds. However, these abilities come with a heavy burden: the muertos are drawn to Talisa, seeking her help to escape a sinister fate. The evil sorcerer Valtor trapped these spirits by dredging up their most shameful secrets and deepest regrets, using these nightmarish memories to force them into creating their own emotional and psychic prisons. These prisons manifest physically in the dark realm of Inferis, where the muertos are condemned to endlessly relive their worst fears. Valtor feeds on the potent emotions generated within these prisons, gaining strength from their suffering. Talisa's unique sensitivity allows her to establish a psychic connection with the trapped spirits. Through this connection, the muertos project a semblance of themselves, a totem, which provides Talisa with clues about their unresolved issues. With this information, she can research and uncover what they need to break free from their emotional bonds. Moreover, Talisa has the rare ability to journey into Inferis through a portal created by the muerto's totem, where she confronts the private hells of these spirits, helping them resolve their pain and escape Valtor's grip. As Talisa navigates the complexities of high school life, a life after the mysterious deaths of her parents, she also delves into the spiritual and cultural fabric of Eldridge Hollow, a town built on an ancient convergence of ley lines that amplify supernatural activity. The town's diverse population, rich history, and eerie folklore create a tapestry of stories and secrets, many of which are tied to Talisa's own family. With the help of her friends, including the logical and resourceful Simon Langley and the protective Connor Sullivan, Talisa takes on the role of a mediator, helping the muertos find peace and move on to the Land of the Dead. However, Talisa's journey is fraught with danger. Malevolent entities, dark secrets, and the enigmatic Guardians of the Veil—a secret society aware of the town's mystical significance—pose constant threats. As Talisa delves deeper into her parents' mysterious deaths, she uncovers connections to the darker aspects of the spiritual world, raising the stakes in her quest to protect her loved ones and bring peace to the trapped souls.
+      In the coastal town of Eldridge Hollow, where the supernatural and mundane coexist uneasily, Talisa Esperanza is born (on The Day of the Dead) into a family with a rich Mexican-American heritage and a lineage of psychic abilities. Talisa's gifts awaken fully on her seventeen birthday, the day she discovers that she can see and communicate with spirits—muertos—trapped between worlds. However, these abilities come with a heavy burden: the muertos are drawn to Talisa, seeking her help to escape a sinister fate. The evil sorcerer Valtor trapped these spirits by dredging up their most shameful secrets and deepest regrets, using these nightmarish memories to force them into creating their own emotional and psychic prisons. These prisons manifest physically in the dark realm of Inferis, where the muertos are condemned to endlessly relive their worst fears. Valtor feeds on the potent emotions generated within these prisons, gaining strength from their suffering. Talisa's unique sensitivity allows her to establish a psychic connection with the trapped spirits. Through this connection, the muertos project a semblance of themselves, a totem, which provides Talisa with clues about their unresolved issues. With this information, she can research and uncover what they need to break free from their emotional bonds. Moreover, Talisa has the rare ability to journey into Inferis through a portal created by the muerto's totem, where she confronts the private hells of these spirits, helping them resolve their pain and escape Valtor's grip. As Talisa navigates the complexities of high school life, a life after the mysterious deaths of her parents, she also delves into the spiritual and cultural fabric of Eldridge Hollow, a town built on an ancient convergence of ley lines that amplify supernatural activity. The town's diverse population, rich history, and eerie folklore create a tapestry of stories and secrets, many of which are tied to Talisa's own family. With the help of her friends, including the logical and resourceful Simon Langley and the protective Connor Sullivan, Talisa takes on the role of a mediator, helping the muertos find peace and move on to Los Muertos World. However, Talisa's journey is fraught with danger. Malevolent entities, dark secrets, and the enigmatic Guardians of the Veil—a secret society aware of the town's mystical significance—pose constant threats. As Talisa delves deeper into her parents' mysterious deaths, she uncovers connections to the darker aspects of the spiritual world, raising the stakes in her quest to protect her loved ones and bring peace to the trapped souls.
       </p>
       <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-left text-sm sm:text-lg leading-5 sm:leading-7">
       <em>Tali and the 10,000 Muertos</em> explores themes of cultural heritage, identity, and the fine line between life and death. Talisa's quest for understanding and justice not only brings peace to the restless spirits but also helps her come to terms with her own grief and the legacy of her family. The series blends the everyday challenges of teenage life with the extraordinary demands of navigating a world filled with the supernatural, promising a captivating journey of mystery, discovery, and emotional resonance.
+      </p>
+      <p className="mt-2 p-2 bg-gray-200 dark:bg-gray-800 rounded text-left text-sm sm:text-lg leading-5 sm:leading-7">
+        Disclaimer: This implementation of StoryElement for the series <em>Tali and the 10,000 Muertos</em> is still in Beta testing. Please be patient as we work to improve the experience and expand the features available to you. We appreciate your feedback and suggestions as we continue to develop this exciting new way to engage with the community. Story elements are subject to change and could potentially be reset.
       </p>
     </div>
   );
@@ -168,6 +190,8 @@ export default function Home() {
      
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-4 sm:p-6">
+      {renderNavigation()}
+      {renderProgressTable()}
       {!isConnected ? (
         <div className="flex flex-col items-center">
           {renderWelcomeContent()}
@@ -179,6 +203,7 @@ export default function Home() {
           </div>
         </div>
       )}
+      {renderNavigation()}
       </main>
   );
 }
